@@ -270,9 +270,9 @@ export type AllSanitySchemaTypes =
     | Slug
 export declare const internalGroqTypeReferenceTo: unique symbol
 // Source: ./src/shared/sanity/queries/posts.ts
-// Variable: QUERY
+// Variable: POSTS_QUERY
 // Query: *[_type == "post" && defined(slug.current)][0...12]{  _id, title, slug}
-export type QUERYResult = Array<{
+export type POSTS_QUERYResult = Array<{
     _id: string
     title: string | null
     slug: Slug | null
@@ -282,6 +282,6 @@ export type QUERYResult = Array<{
 import '@sanity/client'
 declare module '@sanity/client' {
     interface SanityQueries {
-        '*[_type == "post" && defined(slug.current)][0...12]{\n  _id, title, slug\n}': QUERYResult
+        '*[_type == "post" && defined(slug.current)][0...12]{\n  _id, title, slug\n}': POSTS_QUERYResult
     }
 }
