@@ -1,3 +1,12 @@
+# Landing
+
+- **Staging**: [solana-sas-landing-staging.vercel.app](https://solana-sas-landing-staging.vercel.app)
+
 # Studio
 
-- [solana-sas-dev.sanity.studio](https://solana-sas-dev.sanity.studio)
+- **Staging**: [solana-sas-dev.sanity.studio](https://solana-sas-dev.sanity.studio)
+
+# Branches
+
+- **Staging**: `development`
+- **Production**: `main`
