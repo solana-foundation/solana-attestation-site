@@ -10,7 +10,7 @@ export default defineCliConfig({
     vite: {
         css: {
             postcss: {
-                path: './src/shared/sanity/postcss.sanity.config.mjs',
+                path: './src/shared/sanity/postcss.config.mjs',
             },
         },
     },
