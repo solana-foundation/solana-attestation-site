@@ -7,7 +7,7 @@ export default defineType({
     fields: [
         defineField({
             name: 'title',
-            title: 'Title',
+            title: 'Post Title',
             type: 'string',
         }),
         defineField({
