@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - development
-      - feature/studio-deploy
     paths:
       - src/shared/sanity/schema/**/*
 
@@ -14,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  studio:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'Production' || 'staging' }}
@@ -61,6 +60,4 @@ jobs:
           fi
 
           pnpm run sanity:deploy -- --yes
-
-          echo "STUDIO_URL=https://${SANITY_STUDIO_HOSTNAME}.sanity.studio" >> $GITHUB_OUTPUT
 
