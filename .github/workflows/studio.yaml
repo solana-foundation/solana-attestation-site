@@ -1,0 +1,66 @@
+name: Sanity Studio
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - feature/studio-deploy
+    paths:
+      - src/shared/sanity/schema/**/*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'Production' || 'staging' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+          run_install: true
+
+      - name: Deploy Sanity Studio
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+          SANITY_STUDIO_HOSTNAME: ${{ vars.SANITY_STUDIO_HOSTNAME }}
+          SANITY_STUDIO_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+          SANITY_STUDIO_DATASET: ${{ vars.SANITY_STUDIO_DATASET }}
+        run: |
+          if [ -z "${SANITY_AUTH_TOKEN}" ]; then
+            echo "Error: SANITY_AUTH_TOKEN is not set" >&2
+            exit 1
+          fi
+
+          if [ -z "${SANITY_STUDIO_HOSTNAME}" ]; then
+            echo "Error: SANITY_STUDIO_HOSTNAME is not set" >&2
+            exit 1
+          fi
+
+          if [ -z "${SANITY_STUDIO_PROJECT_ID}" ]; then
+            echo "Error: SANITY_STUDIO_PROJECT_ID is not set" >&2
+            exit 1
+          fi
+
+          if [ -z "${SANITY_STUDIO_DATASET}" ]; then
+            echo "Error: SANITY_STUDIO_DATASET is not set" >&2
+            exit 1
+          fi
+
+          pnpm run sanity:deploy
+
+          echo "STUDIO_URL=https://${SANITY_STUDIO_HOSTNAME}.sanity.studio" >> $GITHUB_OUTPUT
+
