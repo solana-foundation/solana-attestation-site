@@ -7,7 +7,17 @@ export default defineType({
     fields: [
         defineField({
             name: 'title',
-            title: 'Title',
+            title: 'Post',
+            type: 'string',
+        }),
+        defineField({
+            name: 'subtitle',
+            title: 'Subtitle',
+            type: 'string',
+        }),
+        defineField({
+            name: 'subtitle2',
+            title: 'Subtitle 2',
             type: 'string',
         }),
         defineField({
