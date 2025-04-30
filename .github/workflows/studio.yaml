@@ -60,7 +60,7 @@ jobs:
             exit 1
           fi
 
-          pnpm run sanity:deploy
+          pnpm run sanity:deploy -- --yes
 
           echo "STUDIO_URL=https://${SANITY_STUDIO_HOSTNAME}.sanity.studio" >> $GITHUB_OUTPUT
 
