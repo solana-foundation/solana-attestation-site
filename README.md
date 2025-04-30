@@ -6,7 +6,7 @@
 ## Studio
 
 - **Staging**: [solana-sas-dev.sanity.studio](https://solana-sas-dev.sanity.studio)
-- **Production**:
+- **Production**: [solana-sas.sanity.studio](https://solana-sas.sanity.studio)
 
 ## Vercel project
 - [vercel.com/hoodies/solana-sas-landing](https://vercel.com/hoodies/solana-sas-landing)
