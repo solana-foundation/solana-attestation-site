@@ -119,6 +119,9 @@ export type Post = {
     _updatedAt: string
     _rev: string
     title?: string
+    subtitle?: string
+    subtitle2?: string
+    subtitle3?: string
     slug?: Slug
     author?: {
         _ref: string
