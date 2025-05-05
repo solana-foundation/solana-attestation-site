@@ -1,0 +1,16 @@
+.background {
+    background-image: url('/bg1.png'), url('/bg2.png'), url('/bg3.png');
+    background-size: 1000px, 900px, 900px;
+    background-position:
+        calc(50% + 250px) -250px,
+        calc(50% + 650px) 850px,
+        calc(50% - 550px) 1750px;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+}
+
+@media screen and (max-width: 639px) {
+    .background {
+        background-size: 700px;
+        background-position: calc(50% - 50px) 200px;
+    }
+}
