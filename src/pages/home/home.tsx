@@ -1,8 +1,6 @@
 import { NextPage } from 'next'
-import { CallToAction, Guides, Hero, HowSasWorks, Quote, UseCases, Using } from '@/entities/home'
+import { CallToAction, Guides, Hero, HowSasWorks, HowToImplement, Quote, UseCases, Using } from '@/entities/home'
 import { Container } from '@/shared/ui/container'
-import { Section } from '@/shared/ui/section'
-import { HowToImplement } from '@/entities/home/ui/how-to-implement'
 
 export const Home: NextPage = () => (
     <>
