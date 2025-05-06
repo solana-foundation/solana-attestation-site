@@ -20,10 +20,12 @@
     "@sanity/image-url": "^1.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "copy-to-clipboard": "^3.3.3",
     "next": "15.3.1",
     "next-sanity": "^9.10.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "shiki": "^3.4.0",
     "styled-components": "^6.1.17"
   },
   "devDependencies": {
