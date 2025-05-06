@@ -8,7 +8,7 @@ type PageFooterProps = {
 }
 
 export const PageFooter: FC<PageFooterProps> = ({ navigation }) => (
-    <div className="bg-[url(/footer-bg.png)] bg-size-[2440px_auto] bg-[center_top_-55px] bg-no-repeat">
+    <div className="bg-[url(/footer-bg.png)] bg-size-[2440px_auto] bg-[center_top_-55px] bg-no-repeat" style={{ imageRendering: 'pixelated' }}>
         <Container
             as="footer"
             layout="wide"

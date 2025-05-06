@@ -1,0 +1,10 @@
+.quote {
+    user-select: none;
+}
+
+.quote::before {
+    content: '“';
+    display: block;
+    position: absolute;
+    left: -10px;
+}
