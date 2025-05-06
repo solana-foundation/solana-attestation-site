@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren } from 'react'
 import { PageHeader } from '@/shared/ui/page-header'
-import { Button } from '@/shared/ui/button/button'
+import { Button } from '@/shared/ui/button'
 import { Icon } from '@/shared/ui/icon'
 import { PageFooter } from '@/shared/ui/page-footer'
 
