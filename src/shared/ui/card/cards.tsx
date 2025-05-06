@@ -1,5 +1,15 @@
+import { cva, VariantProps } from 'class-variance-authority'
 import { FC, PropsWithChildren } from 'react'
 
-type CardsProps = PropsWithChildren
+const cardsVariants = cva('grid grid-cols-1 gap-5', {
+    variants: {
+        layout: {
+            column2: 'lg:grid-cols-[1fr_1fr]',
+            column3: 'lg:grid-cols-[1fr_1fr_1fr]',
+        },
+    },
+})
 
-export const Cards: FC<CardsProps> = ({ children }) => <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1fr] gap-5">{children}</div>
+type CardsProps = PropsWithChildren & VariantProps<typeof cardsVariants>
+
+export const Cards: FC<CardsProps> = ({ children, layout = 'column3' }) => <div className={cardsVariants({ layout })}>{children}</div>

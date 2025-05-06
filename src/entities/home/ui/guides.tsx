@@ -4,7 +4,7 @@ import { FC } from 'react'
 
 export const Guides: FC = () => {
     return (
-        <Section title="Learn with guides" linkTitle="Check all" linkHref="/">
+        <Section title="Learn with guides" linkTitle="Check all" linkHref="/guide">
             <List>
                 <ListItem
                     cover="/bg1.png"
