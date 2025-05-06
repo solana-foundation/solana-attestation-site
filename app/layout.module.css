@@ -6,6 +6,7 @@
         calc(50% + 650px) 850px,
         calc(50% - 550px) 1750px;
     background-repeat: no-repeat, no-repeat, no-repeat;
+    image-rendering: pixelated;
 }
 
 @media screen and (max-width: 639px) {
