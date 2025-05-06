@@ -3,7 +3,7 @@ import { FC } from 'react'
 import styles from './using-item.module.css'
 import clsx from 'clsx'
 
-const usingItemVariants = cva(['bg-white', 'border border-black', 'overflowhidden'], {
+const usingItemVariants = cva(['bg-white', 'border border-black', 'overflow-hidden'], {
     variants: {
         size: {
             default: ['p-4', 'flex items-center justify-center', 'h-30'],
