@@ -24,7 +24,7 @@ export const Tree: FC<TreeProps> = ({ items }) => {
                                 stroke="currentColor"
                                 className="text-black"
                             >
-                                <path d="M2 0V96H98" stroke-width="3" />
+                                <path d="M2 0V96H98" strokeWidth="3" />
                             </svg>
                         </div>
                     )}
