@@ -4,7 +4,7 @@ import { FC } from 'react'
 
 export const UseCases: FC = () => {
     return (
-        <Section title="Use cases" linkTitle="Check more" linkHref="/">
+        <Section title="Use cases" linkTitle="Check more" linkHref="/use-case">
             <Cards>
                 <Card
                     cover="/bg1.png"

@@ -15,16 +15,21 @@ export const Home: NextPage = () => (
         <Container layout="wide">
             <HowSasWorks />
         </Container>
+
         <Container layout="wide">
             <UseCases />
         </Container>
+
         <Quote />
+
         <Container layout="wide">
             <HowToImplement />
         </Container>
+
         <Container layout="wide">
             <Guides />
         </Container>
+
         <Container layout="wide">
             <CallToAction />
         </Container>
