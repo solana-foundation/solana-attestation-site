@@ -1,5 +1,4 @@
 import { FC, PropsWithChildren } from 'react'
-import { Container } from '@/shared/ui/container'
 
 type HeroProps = PropsWithChildren<{
     title: string
