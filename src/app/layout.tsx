@@ -8,8 +8,8 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => (
     <>
         <PageHeader
             navigation={[
-                { title: 'Use Cases', href: '/use-cases' },
-                { title: 'Guides', href: '/guides' },
+                { title: 'Use Cases', href: '/use-case' },
+                { title: 'Guides', href: '/guide' },
                 { title: 'Github', href: 'https://github.com' },
                 { title: 'Docs', href: '/docs' },
                 { title: 'Discord', href: 'https://discord.com' },
@@ -36,11 +36,11 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => (
                 {
                     title: 'Guides',
                     items: [
-                        { title: 'Verifier Cookbook', href: '/' },
-                        { title: 'Start in 5 Minutes', href: '/' },
-                        { title: 'Issuer Playbook', href: '/' },
-                        { title: 'Mainnet Deployment', href: '/' },
-                        { title: 'Security Deep-Dive', href: '/' },
+                        { title: 'Verifier Cookbook', href: '/guide' },
+                        { title: 'Start in 5 Minutes', href: '/guide' },
+                        { title: 'Issuer Playbook', href: '/guide' },
+                        { title: 'Mainnet Deployment', href: '/guide' },
+                        { title: 'Security Deep-Dive', href: '/guide' },
                     ],
                 },
                 {
