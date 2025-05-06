@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import Link from 'next/link'
 import { FC } from 'react'
+import { formatDateLong, formatDateShort } from '@/shared/utils/format-date'
 import type { UrlObject } from 'url'
 
 type ListItemProps = {
@@ -24,8 +25,8 @@ export const ListItem: FC<ListItemProps> = ({ cover, date, title, description, h
     >
         <div className="flex flex-col gap-4">
             <h3 className="order-2 text-xl md:text-2xl font-semibold uppercase tracking-tight">{title}</h3>
-            <time dateTime="2025-04-30" className="order-1 text-xs tracking-tight">
-                30 April
+            <time dateTime={formatDateShort(date)} className="order-1 text-xs tracking-tight">
+                {formatDateLong(date)}
             </time>
             <p className="order-3 text-sm md:text-base tracking-tight">{description}</p>
         </div>
