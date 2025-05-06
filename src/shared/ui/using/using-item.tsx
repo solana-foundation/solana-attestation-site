@@ -1,7 +1,9 @@
 import { cva, VariantProps } from 'class-variance-authority'
 import { FC } from 'react'
+import styles from './using-item.module.css'
+import clsx from 'clsx'
 
-const usingItemVariants = cva(['bg-white', 'border border-black', 'overflow-hidden'], {
+const usingItemVariants = cva(['bg-white', 'border border-black', 'overflowhidden'], {
     variants: {
         size: {
             default: ['p-4', 'flex items-center justify-center', 'h-30'],
@@ -41,6 +43,10 @@ export const UsingItem: FC<UsingItemProps> = ({ name, image, quote, size = 'defa
     <div className={usingItemVariants({ size })}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={image} alt={name} className={imageVariants({ size })} />
-        {size !== 'default' && quote && <p className={textVariants({ size })}>“{quote}”</p>}
+        {size !== 'default' && quote && (
+            <div className="relative">
+                <p className={clsx(textVariants({ size }), styles.quote)}>{quote}”</p>
+            </div>
+        )}
     </div>
 )
