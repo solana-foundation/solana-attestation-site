@@ -41,6 +41,6 @@ export const UsingItem: FC<UsingItemProps> = ({ name, image, quote, size = 'defa
     <div className={usingItemVariants({ size })}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={image} alt={name} className={imageVariants({ size })} />
-        {size !== 'default' && <p className={textVariants({ size })}>“{quote}”</p>}
+        {size !== 'default' && quote && <p className={textVariants({ size })}>“{quote}”</p>}
     </div>
 )
