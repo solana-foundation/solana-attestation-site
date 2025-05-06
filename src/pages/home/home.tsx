@@ -1,5 +1,5 @@
 import { NextPage } from 'next'
-import { Hero, Using } from '@/entities/home'
+import { Hero, HowSasWorks, Using } from '@/entities/home'
 import { Container } from '@/shared/ui/container'
 import { Section } from '@/shared/ui/section'
 
@@ -14,9 +14,7 @@ export const Home: NextPage = () => (
         </Container>
 
         <Container layout="wide">
-            <Section title="How sas works?">
-                <div className="min-h-96 bg-gray-100/50 rounded"></div>
-            </Section>
+            <HowSasWorks />
         </Container>
         <Container layout="wide">
             <Section title="Use cases" linkTitle="Check more" linkHref="/">
