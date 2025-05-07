@@ -9,7 +9,7 @@ export const NotFound: NextPage = () => (
             title="404 — page fell off-chain"
             subTitle={
                 <>
-                    Our over‑caffeinated intern tried to stake this URL and, well… it got slashed.Hop back to the <Link href="/">homepage</Link> to learn about
+                    Our over‑caffeinated intern tried to stake this URL and, well… it got slashed. Hop back to the <Link href="/">homepage</Link> to learn about
                     Solana Attestation Service, or wander footer links.
                 </>
             }
