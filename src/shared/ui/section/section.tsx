@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import { FC, PropsWithChildren } from 'react'
+import { FC, PropsWithChildren, ReactNode } from 'react'
 import type { UrlObject } from 'url'
 
 type SectionProps = PropsWithChildren<{
     title: string
-    subTitle?: string
+    subTitle?: string | ReactNode
     linkHref?: string | UrlObject
     linkTitle?: string
 }>
