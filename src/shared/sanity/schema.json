@@ -326,13 +326,2708 @@
     }
   },
   {
-    "name": "blockContent",
+    "name": "settings",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "settings"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "topNavigation": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "top-navigation"
+        },
+        "optional": true
+      },
+      "bottomNavigation": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "bottom-navigation"
+        },
+        "optional": true
+      }
+    }
+  },
+  {
+    "name": "home",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "home"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "content": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "array",
+          "of": {
+            "type": "union",
+            "of": [
+              {
+                "type": "object",
+                "attributes": {
+                  "_key": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "inline",
+                  "name": "hero"
+                }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "title": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLinkTitle": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLink": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "inline",
+                      "name": "link"
+                    },
+                    "optional": true
+                  },
+                  "content": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "array",
+                      "of": {
+                        "type": "object",
+                        "attributes": {
+                          "_key": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "rest": {
+                          "type": "inline",
+                          "name": "testimonial"
+                        }
+                      }
+                    },
+                    "optional": true
+                  },
+                  "_type": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string",
+                      "value": "testimonials"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "object",
+                  "attributes": {
+                    "_key": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "title": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLinkTitle": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLink": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "inline",
+                      "name": "link"
+                    },
+                    "optional": true
+                  },
+                  "content": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "array",
+                      "of": {
+                        "type": "object",
+                        "attributes": {
+                          "_key": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "rest": {
+                          "type": "inline",
+                          "name": "step"
+                        }
+                      }
+                    },
+                    "optional": true
+                  },
+                  "_type": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string",
+                      "value": "steps"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "object",
+                  "attributes": {
+                    "_key": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "title": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLinkTitle": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLink": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "inline",
+                      "name": "link"
+                    },
+                    "optional": true
+                  },
+                  "mode": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "union",
+                      "of": [
+                        {
+                          "type": "string",
+                          "value": "latest"
+                        },
+                        {
+                          "type": "string",
+                          "value": "specific"
+                        }
+                      ]
+                    },
+                    "optional": true
+                  },
+                  "latestAmount": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "number"
+                    },
+                    "optional": true
+                  },
+                  "references": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "array",
+                      "of": {
+                        "type": "object",
+                        "attributes": {
+                          "_ref": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "_type": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "string",
+                              "value": "reference"
+                            }
+                          },
+                          "_weak": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "boolean"
+                            },
+                            "optional": true
+                          }
+                        },
+                        "dereferencesTo": "use-case",
+                        "rest": {
+                          "type": "object",
+                          "attributes": {
+                            "_key": {
+                              "type": "objectAttribute",
+                              "value": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "optional": true
+                  },
+                  "_type": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string",
+                      "value": "use-cases"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "object",
+                  "attributes": {
+                    "_key": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "_key": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "inline",
+                  "name": "quote"
+                }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "title": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLinkTitle": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLink": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "inline",
+                      "name": "link"
+                    },
+                    "optional": true
+                  },
+                  "content": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "array",
+                      "of": {
+                        "type": "object",
+                        "attributes": {
+                          "_key": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "rest": {
+                          "type": "inline",
+                          "name": "code-file"
+                        }
+                      }
+                    },
+                    "optional": true
+                  },
+                  "_type": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string",
+                      "value": "code-examples"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "object",
+                  "attributes": {
+                    "_key": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "title": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLinkTitle": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "docsLink": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "inline",
+                      "name": "link"
+                    },
+                    "optional": true
+                  },
+                  "mode": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "union",
+                      "of": [
+                        {
+                          "type": "string",
+                          "value": "latest"
+                        },
+                        {
+                          "type": "string",
+                          "value": "specific"
+                        }
+                      ]
+                    },
+                    "optional": true
+                  },
+                  "latestAmount": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "number"
+                    },
+                    "optional": true
+                  },
+                  "references": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "array",
+                      "of": {
+                        "type": "object",
+                        "attributes": {
+                          "_ref": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "_type": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "string",
+                              "value": "reference"
+                            }
+                          },
+                          "_weak": {
+                            "type": "objectAttribute",
+                            "value": {
+                              "type": "boolean"
+                            },
+                            "optional": true
+                          }
+                        },
+                        "dereferencesTo": "guide",
+                        "rest": {
+                          "type": "object",
+                          "attributes": {
+                            "_key": {
+                              "type": "objectAttribute",
+                              "value": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "optional": true
+                  },
+                  "_type": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string",
+                      "value": "guides"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "object",
+                  "attributes": {
+                    "_key": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "optional": true
+      }
+    }
+  },
+  {
+    "name": "guides",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "guides"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "title": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLinkTitle": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLink": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "link"
+        },
+        "optional": true
+      },
+      "mode": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "union",
+          "of": [
+            {
+              "type": "string",
+              "value": "latest"
+            },
+            {
+              "type": "string",
+              "value": "specific"
+            }
+          ]
+        },
+        "optional": true
+      },
+      "latestAmount": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "number"
+        },
+        "optional": true
+      },
+      "references": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_ref": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              },
+              "_type": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string",
+                  "value": "reference"
+                }
+              },
+              "_weak": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "boolean"
+                },
+                "optional": true
+              }
+            },
+            "dereferencesTo": "guide",
+            "rest": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "optional": true
+      }
+    }
+  },
+  {
+    "name": "use-cases",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "use-cases"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "title": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLinkTitle": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLink": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "link"
+        },
+        "optional": true
+      },
+      "mode": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "union",
+          "of": [
+            {
+              "type": "string",
+              "value": "latest"
+            },
+            {
+              "type": "string",
+              "value": "specific"
+            }
+          ]
+        },
+        "optional": true
+      },
+      "latestAmount": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "number"
+        },
+        "optional": true
+      },
+      "references": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_ref": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              },
+              "_type": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string",
+                  "value": "reference"
+                }
+              },
+              "_weak": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "boolean"
+                },
+                "optional": true
+              }
+            },
+            "dereferencesTo": "use-case",
+            "rest": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "optional": true
+      }
+    }
+  },
+  {
+    "name": "code-examples",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "code-examples"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "title": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLinkTitle": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLink": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "link"
+        },
+        "optional": true
+      },
+      "content": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_key": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "rest": {
+              "type": "inline",
+              "name": "code-file"
+            }
+          }
+        },
+        "optional": true
+      }
+    }
+  },
+  {
+    "name": "code-file",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "code-file"
+          }
+        },
+        "name": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "abap"
+              },
+              {
+                "type": "string",
+                "value": "actionscript-3"
+              },
+              {
+                "type": "string",
+                "value": "ada"
+              },
+              {
+                "type": "string",
+                "value": "adoc"
+              },
+              {
+                "type": "string",
+                "value": "angular-html"
+              },
+              {
+                "type": "string",
+                "value": "angular-ts"
+              },
+              {
+                "type": "string",
+                "value": "apache"
+              },
+              {
+                "type": "string",
+                "value": "apex"
+              },
+              {
+                "type": "string",
+                "value": "apl"
+              },
+              {
+                "type": "string",
+                "value": "applescript"
+              },
+              {
+                "type": "string",
+                "value": "ara"
+              },
+              {
+                "type": "string",
+                "value": "asciidoc"
+              },
+              {
+                "type": "string",
+                "value": "asm"
+              },
+              {
+                "type": "string",
+                "value": "astro"
+              },
+              {
+                "type": "string",
+                "value": "awk"
+              },
+              {
+                "type": "string",
+                "value": "ballerina"
+              },
+              {
+                "type": "string",
+                "value": "bash"
+              },
+              {
+                "type": "string",
+                "value": "batQuote"
+              },
+              {
+                "type": "string",
+                "value": "batch"
+              },
+              {
+                "type": "string",
+                "value": "be"
+              },
+              {
+                "type": "string",
+                "value": "beancount"
+              },
+              {
+                "type": "string",
+                "value": "berry"
+              },
+              {
+                "type": "string",
+                "value": "bibtex"
+              },
+              {
+                "type": "string",
+                "value": "bicep"
+              },
+              {
+                "type": "string",
+                "value": "blade"
+              },
+              {
+                "type": "string",
+                "value": "bsl"
+              },
+              {
+                "type": "string",
+                "value": "c"
+              },
+              {
+                "type": "string",
+                "value": "c#"
+              },
+              {
+                "type": "string",
+                "value": "c++"
+              },
+              {
+                "type": "string",
+                "value": "cadence"
+              },
+              {
+                "type": "string",
+                "value": "cairo"
+              },
+              {
+                "type": "string",
+                "value": "cdc"
+              },
+              {
+                "type": "string",
+                "value": "clarity"
+              },
+              {
+                "type": "string",
+                "value": "clj"
+              },
+              {
+                "type": "string",
+                "value": "clojure"
+              },
+              {
+                "type": "string",
+                "value": "closure-templates"
+              },
+              {
+                "type": "string",
+                "value": "cmake"
+              },
+              {
+                "type": "string",
+                "value": "cmd"
+              },
+              {
+                "type": "string",
+                "value": "cobol"
+              },
+              {
+                "type": "string",
+                "value": "codeowners"
+              },
+              {
+                "type": "string",
+                "value": "codeql"
+              },
+              {
+                "type": "string",
+                "value": "coffee"
+              },
+              {
+                "type": "string",
+                "value": "coffeescript"
+              },
+              {
+                "type": "string",
+                "value": "common-lisp"
+              },
+              {
+                "type": "string",
+                "value": "console"
+              },
+              {
+                "type": "string",
+                "value": "coq"
+              },
+              {
+                "type": "string",
+                "value": "cpp"
+              },
+              {
+                "type": "string",
+                "value": "cql"
+              },
+              {
+                "type": "string",
+                "value": "crystal"
+              },
+              {
+                "type": "string",
+                "value": "cs"
+              },
+              {
+                "type": "string",
+                "value": "csharp"
+              },
+              {
+                "type": "string",
+                "value": "css"
+              },
+              {
+                "type": "string",
+                "value": "csv"
+              },
+              {
+                "type": "string",
+                "value": "cue"
+              },
+              {
+                "type": "string",
+                "value": "cypher"
+              },
+              {
+                "type": "string",
+                "value": "d"
+              },
+              {
+                "type": "string",
+                "value": "dart"
+              },
+              {
+                "type": "string",
+                "value": "dax"
+              },
+              {
+                "type": "string",
+                "value": "desktop"
+              },
+              {
+                "type": "string",
+                "value": "diff"
+              },
+              {
+                "type": "string",
+                "value": "docker"
+              },
+              {
+                "type": "string",
+                "value": "dockerfile"
+              },
+              {
+                "type": "string",
+                "value": "dotenv"
+              },
+              {
+                "type": "string",
+                "value": "dream-maker"
+              },
+              {
+                "type": "string",
+                "value": "edge"
+              },
+              {
+                "type": "string",
+                "value": "elisp"
+              },
+              {
+                "type": "string",
+                "value": "elixir"
+              },
+              {
+                "type": "string",
+                "value": "elm"
+              },
+              {
+                "type": "string",
+                "value": "emacs-lisp"
+              },
+              {
+                "type": "string",
+                "value": "erb"
+              },
+              {
+                "type": "string",
+                "value": "erl"
+              },
+              {
+                "type": "string",
+                "value": "erlang"
+              },
+              {
+                "type": "string",
+                "value": "f"
+              },
+              {
+                "type": "string",
+                "value": "f#"
+              },
+              {
+                "type": "string",
+                "value": "f03"
+              },
+              {
+                "type": "string",
+                "value": "f08"
+              },
+              {
+                "type": "string",
+                "value": "f18"
+              },
+              {
+                "type": "string",
+                "value": "f77"
+              },
+              {
+                "type": "string",
+                "value": "f90"
+              },
+              {
+                "type": "string",
+                "value": "f95"
+              },
+              {
+                "type": "string",
+                "value": "fennel"
+              },
+              {
+                "type": "string",
+                "value": "fish"
+              },
+              {
+                "type": "string",
+                "value": "fluent"
+              },
+              {
+                "type": "string",
+                "value": "for"
+              },
+              {
+                "type": "string",
+                "value": "fortran-fixed-form"
+              },
+              {
+                "type": "string",
+                "value": "fortran-free-form"
+              },
+              {
+                "type": "string",
+                "value": "fs"
+              },
+              {
+                "type": "string",
+                "value": "fsharp"
+              },
+              {
+                "type": "string",
+                "value": "fsl"
+              },
+              {
+                "type": "string",
+                "value": "ftl"
+              },
+              {
+                "type": "string",
+                "value": "gdresource"
+              },
+              {
+                "type": "string",
+                "value": "gdscript"
+              },
+              {
+                "type": "string",
+                "value": "gdshader"
+              },
+              {
+                "type": "string",
+                "value": "genie"
+              },
+              {
+                "type": "string",
+                "value": "gherkin"
+              },
+              {
+                "type": "string",
+                "value": "git-commit"
+              },
+              {
+                "type": "string",
+                "value": "git-rebase"
+              },
+              {
+                "type": "string",
+                "value": "gjs"
+              },
+              {
+                "type": "string",
+                "value": "gleam"
+              },
+              {
+                "type": "string",
+                "value": "glimmer-js"
+              },
+              {
+                "type": "string",
+                "value": "glimmer-ts"
+              },
+              {
+                "type": "string",
+                "value": "glsl"
+              },
+              {
+                "type": "string",
+                "value": "gnuplot"
+              },
+              {
+                "type": "string",
+                "value": "go"
+              },
+              {
+                "type": "string",
+                "value": "gql"
+              },
+              {
+                "type": "string",
+                "value": "graphql"
+              },
+              {
+                "type": "string",
+                "value": "groovy"
+              },
+              {
+                "type": "string",
+                "value": "gts"
+              },
+              {
+                "type": "string",
+                "value": "hack"
+              },
+              {
+                "type": "string",
+                "value": "haml"
+              },
+              {
+                "type": "string",
+                "value": "handlebars"
+              },
+              {
+                "type": "string",
+                "value": "haskell"
+              },
+              {
+                "type": "string",
+                "value": "haxe"
+              },
+              {
+                "type": "string",
+                "value": "hbs"
+              },
+              {
+                "type": "string",
+                "value": "hcl"
+              },
+              {
+                "type": "string",
+                "value": "hjson"
+              },
+              {
+                "type": "string",
+                "value": "hlsl"
+              },
+              {
+                "type": "string",
+                "value": "hs"
+              },
+              {
+                "type": "string",
+                "value": "html"
+              },
+              {
+                "type": "string",
+                "value": "html-derivative"
+              },
+              {
+                "type": "string",
+                "value": "http"
+              },
+              {
+                "type": "string",
+                "value": "hxml"
+              },
+              {
+                "type": "string",
+                "value": "hy"
+              },
+              {
+                "type": "string",
+                "value": "imba"
+              },
+              {
+                "type": "string",
+                "value": "ini"
+              },
+              {
+                "type": "string",
+                "value": "jade"
+              },
+              {
+                "type": "string",
+                "value": "java"
+              },
+              {
+                "type": "string",
+                "value": "javascript"
+              },
+              {
+                "type": "string",
+                "value": "jinja"
+              },
+              {
+                "type": "string",
+                "value": "jison"
+              },
+              {
+                "type": "string",
+                "value": "jl"
+              },
+              {
+                "type": "string",
+                "value": "js"
+              },
+              {
+                "type": "string",
+                "value": "json"
+              },
+              {
+                "type": "string",
+                "value": "json5"
+              },
+              {
+                "type": "string",
+                "value": "jsonc"
+              },
+              {
+                "type": "string",
+                "value": "jsonl"
+              },
+              {
+                "type": "string",
+                "value": "jsonnet"
+              },
+              {
+                "type": "string",
+                "value": "jssm"
+              },
+              {
+                "type": "string",
+                "value": "jsx"
+              },
+              {
+                "type": "string",
+                "value": "julia"
+              },
+              {
+                "type": "string",
+                "value": "kotlin"
+              },
+              {
+                "type": "string",
+                "value": "kql"
+              },
+              {
+                "type": "string",
+                "value": "kt"
+              },
+              {
+                "type": "string",
+                "value": "kts"
+              },
+              {
+                "type": "string",
+                "value": "kusto"
+              },
+              {
+                "type": "string",
+                "value": "latex"
+              },
+              {
+                "type": "string",
+                "value": "lean"
+              },
+              {
+                "type": "string",
+                "value": "lean4"
+              },
+              {
+                "type": "string",
+                "value": "less"
+              },
+              {
+                "type": "string",
+                "value": "liquid"
+              },
+              {
+                "type": "string",
+                "value": "lisp"
+              },
+              {
+                "type": "string",
+                "value": "lit"
+              },
+              {
+                "type": "string",
+                "value": "llvm"
+              },
+              {
+                "type": "string",
+                "value": "log"
+              },
+              {
+                "type": "string",
+                "value": "logo"
+              },
+              {
+                "type": "string",
+                "value": "lua"
+              },
+              {
+                "type": "string",
+                "value": "luau"
+              },
+              {
+                "type": "string",
+                "value": "make"
+              },
+              {
+                "type": "string",
+                "value": "makefile"
+              },
+              {
+                "type": "string",
+                "value": "markdown"
+              },
+              {
+                "type": "string",
+                "value": "marko"
+              },
+              {
+                "type": "string",
+                "value": "matlab"
+              },
+              {
+                "type": "string",
+                "value": "md"
+              },
+              {
+                "type": "string",
+                "value": "mdc"
+              },
+              {
+                "type": "string",
+                "value": "mdx"
+              },
+              {
+                "type": "string",
+                "value": "mediawiki"
+              },
+              {
+                "type": "string",
+                "value": "mermaid"
+              },
+              {
+                "type": "string",
+                "value": "mips"
+              },
+              {
+                "type": "string",
+                "value": "mipsasm"
+              },
+              {
+                "type": "string",
+                "value": "mmd"
+              },
+              {
+                "type": "string",
+                "value": "mojo"
+              },
+              {
+                "type": "string",
+                "value": "move"
+              },
+              {
+                "type": "string",
+                "value": "nar"
+              },
+              {
+                "type": "string",
+                "value": "narrat"
+              },
+              {
+                "type": "string",
+                "value": "nextflow"
+              },
+              {
+                "type": "string",
+                "value": "nf"
+              },
+              {
+                "type": "string",
+                "value": "nginx"
+              },
+              {
+                "type": "string",
+                "value": "nim"
+              },
+              {
+                "type": "string",
+                "value": "nix"
+              },
+              {
+                "type": "string",
+                "value": "nu"
+              },
+              {
+                "type": "string",
+                "value": "nushell"
+              },
+              {
+                "type": "string",
+                "value": "objc"
+              },
+              {
+                "type": "string",
+                "value": "objective-c"
+              },
+              {
+                "type": "string",
+                "value": "objective-cpp"
+              },
+              {
+                "type": "string",
+                "value": "ocaml"
+              },
+              {
+                "type": "string",
+                "value": "pascal"
+              },
+              {
+                "type": "string",
+                "value": "perl"
+              },
+              {
+                "type": "string",
+                "value": "perl6"
+              },
+              {
+                "type": "string",
+                "value": "php"
+              },
+              {
+                "type": "string",
+                "value": "plsql"
+              },
+              {
+                "type": "string",
+                "value": "po"
+              },
+              {
+                "type": "string",
+                "value": "polar"
+              },
+              {
+                "type": "string",
+                "value": "postcss"
+              },
+              {
+                "type": "string",
+                "value": "pot"
+              },
+              {
+                "type": "string",
+                "value": "potx"
+              },
+              {
+                "type": "string",
+                "value": "powerquery"
+              },
+              {
+                "type": "string",
+                "value": "powershell"
+              },
+              {
+                "type": "string",
+                "value": "prisma"
+              },
+              {
+                "type": "string",
+                "value": "prolog"
+              },
+              {
+                "type": "string",
+                "value": "properties"
+              },
+              {
+                "type": "string",
+                "value": "proto"
+              },
+              {
+                "type": "string",
+                "value": "protobuf"
+              },
+              {
+                "type": "string",
+                "value": "ps"
+              },
+              {
+                "type": "string",
+                "value": "ps1"
+              },
+              {
+                "type": "string",
+                "value": "pug"
+              },
+              {
+                "type": "string",
+                "value": "puppet"
+              },
+              {
+                "type": "string",
+                "value": "purescript"
+              },
+              {
+                "type": "string",
+                "value": "py"
+              },
+              {
+                "type": "string",
+                "value": "python"
+              },
+              {
+                "type": "string",
+                "value": "ql"
+              },
+              {
+                "type": "string",
+                "value": "qml"
+              },
+              {
+                "type": "string",
+                "value": "qmldir"
+              },
+              {
+                "type": "string",
+                "value": "qss"
+              },
+              {
+                "type": "string",
+                "value": "r"
+              },
+              {
+                "type": "string",
+                "value": "racket"
+              },
+              {
+                "type": "string",
+                "value": "raku"
+              },
+              {
+                "type": "string",
+                "value": "razor"
+              },
+              {
+                "type": "string",
+                "value": "rb"
+              },
+              {
+                "type": "string",
+                "value": "reg"
+              },
+              {
+                "type": "string",
+                "value": "regex"
+              },
+              {
+                "type": "string",
+                "value": "regexp"
+              },
+              {
+                "type": "string",
+                "value": "rel"
+              },
+              {
+                "type": "string",
+                "value": "riscv"
+              },
+              {
+                "type": "string",
+                "value": "rs"
+              },
+              {
+                "type": "string",
+                "value": "rst"
+              },
+              {
+                "type": "string",
+                "value": "ruby"
+              },
+              {
+                "type": "string",
+                "value": "rust"
+              },
+              {
+                "type": "string",
+                "value": "sas"
+              },
+              {
+                "type": "string",
+                "value": "sass"
+              },
+              {
+                "type": "string",
+                "value": "scala"
+              },
+              {
+                "type": "string",
+                "value": "scheme"
+              },
+              {
+                "type": "string",
+                "value": "scss"
+              },
+              {
+                "type": "string",
+                "value": "sdbl"
+              },
+              {
+                "type": "string",
+                "value": "sh"
+              },
+              {
+                "type": "string",
+                "value": "shader"
+              },
+              {
+                "type": "string",
+                "value": "shaderlab"
+              },
+              {
+                "type": "string",
+                "value": "shell"
+              },
+              {
+                "type": "string",
+                "value": "shellscript"
+              },
+              {
+                "type": "string",
+                "value": "shellsession"
+              },
+              {
+                "type": "string",
+                "value": "smalltalk"
+              },
+              {
+                "type": "string",
+                "value": "solidity"
+              },
+              {
+                "type": "string",
+                "value": "soy"
+              },
+              {
+                "type": "string",
+                "value": "sparql"
+              },
+              {
+                "type": "string",
+                "value": "spl"
+              },
+              {
+                "type": "string",
+                "value": "splunk"
+              },
+              {
+                "type": "string",
+                "value": "sql"
+              },
+              {
+                "type": "string",
+                "value": "ssh-config"
+              },
+              {
+                "type": "string",
+                "value": "stata"
+              },
+              {
+                "type": "string",
+                "value": "styl"
+              },
+              {
+                "type": "string",
+                "value": "stylus"
+              },
+              {
+                "type": "string",
+                "value": "svelte"
+              },
+              {
+                "type": "string",
+                "value": "swift"
+              },
+              {
+                "type": "string",
+                "value": "system-verilog"
+              },
+              {
+                "type": "string",
+                "value": "systemd"
+              },
+              {
+                "type": "string",
+                "value": "talon"
+              },
+              {
+                "type": "string",
+                "value": "talonscript"
+              },
+              {
+                "type": "string",
+                "value": "tasl"
+              },
+              {
+                "type": "string",
+                "value": "tcl"
+              },
+              {
+                "type": "string",
+                "value": "templ"
+              },
+              {
+                "type": "string",
+                "value": "terraform"
+              },
+              {
+                "type": "string",
+                "value": "tex"
+              },
+              {
+                "type": "string",
+                "value": "tf"
+              },
+              {
+                "type": "string",
+                "value": "tfvars"
+              },
+              {
+                "type": "string",
+                "value": "toml"
+              },
+              {
+                "type": "string",
+                "value": "ts"
+              },
+              {
+                "type": "string",
+                "value": "ts-tags"
+              },
+              {
+                "type": "string",
+                "value": "tsp"
+              },
+              {
+                "type": "string",
+                "value": "tsv"
+              },
+              {
+                "type": "string",
+                "value": "tsx"
+              },
+              {
+                "type": "string",
+                "value": "turtle"
+              },
+              {
+                "type": "string",
+                "value": "twig"
+              },
+              {
+                "type": "string",
+                "value": "typ"
+              },
+              {
+                "type": "string",
+                "value": "typescript"
+              },
+              {
+                "type": "string",
+                "value": "typespec"
+              },
+              {
+                "type": "string",
+                "value": "typst"
+              },
+              {
+                "type": "string",
+                "value": "v"
+              },
+              {
+                "type": "string",
+                "value": "vala"
+              },
+              {
+                "type": "string",
+                "value": "vb"
+              },
+              {
+                "type": "string",
+                "value": "verilog"
+              },
+              {
+                "type": "string",
+                "value": "vhdl"
+              },
+              {
+                "type": "string",
+                "value": "vim"
+              },
+              {
+                "type": "string",
+                "value": "viml"
+              },
+              {
+                "type": "string",
+                "value": "vimscript"
+              },
+              {
+                "type": "string",
+                "value": "vue"
+              },
+              {
+                "type": "string",
+                "value": "vue-html"
+              },
+              {
+                "type": "string",
+                "value": "vy"
+              },
+              {
+                "type": "string",
+                "value": "vyper"
+              },
+              {
+                "type": "string",
+                "value": "wasm"
+              },
+              {
+                "type": "string",
+                "value": "wenyan"
+              },
+              {
+                "type": "string",
+                "value": "wgsl"
+              },
+              {
+                "type": "string",
+                "value": "wiki"
+              },
+              {
+                "type": "string",
+                "value": "wikitext"
+              },
+              {
+                "type": "string",
+                "value": "wit"
+              },
+              {
+                "type": "string",
+                "value": "wl"
+              },
+              {
+                "type": "string",
+                "value": "wolfram"
+              },
+              {
+                "type": "string",
+                "value": "xml"
+              },
+              {
+                "type": "string",
+                "value": "xsl"
+              },
+              {
+                "type": "string",
+                "value": "yaml"
+              },
+              {
+                "type": "string",
+                "value": "yml"
+              },
+              {
+                "type": "string",
+                "value": "zenscript"
+              },
+              {
+                "type": "string",
+                "value": "zig"
+              },
+              {
+                "type": "string",
+                "value": "zsh"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "code": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "quote",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "quote"
+          }
+        },
+        "logo": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "object",
+            "attributes": {
+              "asset": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "object",
+                  "attributes": {
+                    "_ref": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "_type": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string",
+                        "value": "reference"
+                      }
+                    },
+                    "_weak": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "boolean"
+                      },
+                      "optional": true
+                    }
+                  },
+                  "dereferencesTo": "sanity.imageAsset"
+                },
+                "optional": true
+              },
+              "media": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "unknown"
+                },
+                "optional": true
+              },
+              "hotspot": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "inline",
+                  "name": "sanity.imageHotspot"
+                },
+                "optional": true
+              },
+              "crop": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "inline",
+                  "name": "sanity.imageCrop"
+                },
+                "optional": true
+              },
+              "_type": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string",
+                  "value": "image"
+                }
+              }
+            }
+          },
+          "optional": true
+        },
+        "name": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "testimonial": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "steps",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "steps"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "title": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLinkTitle": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLink": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "link"
+        },
+        "optional": true
+      },
+      "content": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_key": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "rest": {
+              "type": "inline",
+              "name": "step"
+            }
+          }
+        },
+        "optional": true
+      }
+    }
+  },
+  {
+    "name": "step",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "step"
+          }
+        },
+        "title": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "description": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "testimonials",
+    "type": "document",
+    "attributes": {
+      "_id": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_type": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string",
+          "value": "testimonials"
+        }
+      },
+      "_createdAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_updatedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "_rev": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        }
+      },
+      "title": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLinkTitle": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "docsLink": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "link"
+        },
+        "optional": true
+      },
+      "content": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_key": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "rest": {
+              "type": "inline",
+              "name": "testimonial"
+            }
+          }
+        },
+        "optional": true
+      }
+    }
+  },
+  {
+    "name": "testimonial",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "testimonial"
+          }
+        },
+        "logo": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "object",
+            "attributes": {
+              "asset": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "object",
+                  "attributes": {
+                    "_ref": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "_type": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string",
+                        "value": "reference"
+                      }
+                    },
+                    "_weak": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "boolean"
+                      },
+                      "optional": true
+                    }
+                  },
+                  "dereferencesTo": "sanity.imageAsset"
+                },
+                "optional": true
+              },
+              "media": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "unknown"
+                },
+                "optional": true
+              },
+              "hotspot": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "inline",
+                  "name": "sanity.imageHotspot"
+                },
+                "optional": true
+              },
+              "crop": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "inline",
+                  "name": "sanity.imageCrop"
+                },
+                "optional": true
+              },
+              "_type": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string",
+                  "value": "image"
+                }
+              }
+            }
+          },
+          "optional": true
+        },
+        "name": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "layout": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "small"
+              },
+              {
+                "type": "string",
+                "value": "medium"
+              },
+              {
+                "type": "string",
+                "value": "large"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "testimonial": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "hero",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "hero"
+          }
+        },
+        "title": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "content": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "links": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "array",
+            "of": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "rest": {
+                "type": "inline",
+                "name": "button-link"
+              }
+            }
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "rich-text",
     "type": "type",
     "value": {
       "type": "array",
       "of": {
         "type": "union",
         "of": [
+          {
+            "type": "object",
+            "attributes": {
+              "_key": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "rest": {
+              "type": "inline",
+              "name": "code-file"
+            }
+          },
+          {
+            "type": "object",
+            "attributes": {
+              "asset": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "object",
+                  "attributes": {
+                    "_ref": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "_type": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "string",
+                        "value": "reference"
+                      }
+                    },
+                    "_weak": {
+                      "type": "objectAttribute",
+                      "value": {
+                        "type": "boolean"
+                      },
+                      "optional": true
+                    }
+                  },
+                  "dereferencesTo": "sanity.imageAsset"
+                },
+                "optional": true
+              },
+              "media": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "unknown"
+                },
+                "optional": true
+              },
+              "hotspot": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "inline",
+                  "name": "sanity.imageHotspot"
+                },
+                "optional": true
+              },
+              "crop": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "inline",
+                  "name": "sanity.imageCrop"
+                },
+                "optional": true
+              },
+              "_type": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string",
+                  "value": "image"
+                }
+              }
+            },
+            "rest": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
           {
             "type": "object",
             "attributes": {
@@ -390,14 +3085,6 @@
                   "of": [
                     {
                       "type": "string",
-                      "value": "normal"
-                    },
-                    {
-                      "type": "string",
-                      "value": "h1"
-                    },
-                    {
-                      "type": "string",
                       "value": "h2"
                     },
                     {
@@ -410,7 +3097,7 @@
                     },
                     {
                       "type": "string",
-                      "value": "blockquote"
+                      "value": "normal"
                     }
                   ]
                 },
@@ -492,140 +3179,274 @@
                 }
               }
             }
-          },
-          {
-            "type": "object",
-            "attributes": {
-              "asset": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "object",
-                  "attributes": {
-                    "_ref": {
-                      "type": "objectAttribute",
-                      "value": {
-                        "type": "string"
-                      }
-                    },
-                    "_type": {
-                      "type": "objectAttribute",
-                      "value": {
-                        "type": "string",
-                        "value": "reference"
-                      }
-                    },
-                    "_weak": {
-                      "type": "objectAttribute",
-                      "value": {
-                        "type": "boolean"
-                      },
-                      "optional": true
-                    }
-                  },
-                  "dereferencesTo": "sanity.imageAsset"
-                },
-                "optional": true
-              },
-              "media": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "unknown"
-                },
-                "optional": true
-              },
-              "hotspot": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "inline",
-                  "name": "sanity.imageHotspot"
-                },
-                "optional": true
-              },
-              "crop": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "inline",
-                  "name": "sanity.imageCrop"
-                },
-                "optional": true
-              },
-              "_type": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "string",
-                  "value": "image"
-                }
-              }
-            },
-            "rest": {
-              "type": "object",
-              "attributes": {
-                "_key": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
           }
         ]
       }
     }
   },
   {
-    "name": "category",
-    "type": "document",
-    "attributes": {
-      "_id": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        }
-      },
-      "_type": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string",
-          "value": "category"
-        }
-      },
-      "_createdAt": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        }
-      },
-      "_updatedAt": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        }
-      },
-      "_rev": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        }
-      },
-      "title": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
+    "name": "doc-reference",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "doc-reference"
+          }
         },
-        "optional": true
-      },
-      "description": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
+        "title": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
         },
-        "optional": true
+        "url": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "link"
+          },
+          "optional": true
+        }
       }
     }
   },
   {
-    "name": "post",
+    "name": "button-link",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "button-link"
+          }
+        },
+        "title": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "url": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "link"
+          },
+          "optional": true
+        },
+        "variant": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "primary"
+              },
+              {
+                "type": "string",
+                "value": "secondary"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "icon": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "copy"
+              },
+              {
+                "type": "string",
+                "value": "documentation"
+              },
+              {
+                "type": "string",
+                "value": "github"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "newWindow": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "text-link",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "text-link"
+          }
+        },
+        "title": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "link": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "link"
+          },
+          "optional": true
+        },
+        "newWindow": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "link",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "link"
+          }
+        },
+        "mode": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "external"
+              },
+              {
+                "type": "string",
+                "value": "home"
+              },
+              {
+                "type": "string",
+                "value": "guide-list"
+              },
+              {
+                "type": "string",
+                "value": "guide"
+              },
+              {
+                "type": "string",
+                "value": "use-case-list"
+              },
+              {
+                "type": "string",
+                "value": "use-case"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "url": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "guide": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "object",
+            "attributes": {
+              "_ref": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              },
+              "_type": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string",
+                  "value": "reference"
+                }
+              },
+              "_weak": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "boolean"
+                },
+                "optional": true
+              }
+            },
+            "dereferencesTo": "guide"
+          },
+          "optional": true
+        },
+        "useCase": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "object",
+            "attributes": {
+              "_ref": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              },
+              "_type": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string",
+                  "value": "reference"
+                }
+              },
+              "_weak": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "boolean"
+                },
+                "optional": true
+              }
+            },
+            "dereferencesTo": "use-case"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "use-case",
     "type": "document",
     "attributes": {
       "_id": {
@@ -638,7 +3459,7 @@
         "type": "objectAttribute",
         "value": {
           "type": "string",
-          "value": "post"
+          "value": "use-case"
         }
       },
       "_createdAt": {
@@ -660,27 +3481,6 @@
         }
       },
       "title": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
-      "subtitle": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
-      "subtitle2": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
-      "subtitle3": {
         "type": "objectAttribute",
         "value": {
           "type": "string"
@@ -695,37 +3495,21 @@
         },
         "optional": true
       },
-      "author": {
+      "publishedAt": {
         "type": "objectAttribute",
         "value": {
-          "type": "object",
-          "attributes": {
-            "_ref": {
-              "type": "objectAttribute",
-              "value": {
-                "type": "string"
-              }
-            },
-            "_type": {
-              "type": "objectAttribute",
-              "value": {
-                "type": "string",
-                "value": "reference"
-              }
-            },
-            "_weak": {
-              "type": "objectAttribute",
-              "value": {
-                "type": "boolean"
-              },
-              "optional": true
-            }
-          },
-          "dereferencesTo": "author"
+          "type": "string"
         },
         "optional": true
       },
-      "mainImage": {
+      "description": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "cover": {
         "type": "objectAttribute",
         "value": {
           "type": "object",
@@ -794,7 +3578,15 @@
         },
         "optional": true
       },
-      "categories": {
+      "content": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "rich-text"
+        },
+        "optional": true
+      },
+      "related": {
         "type": "objectAttribute",
         "value": {
           "type": "array",
@@ -822,7 +3614,7 @@
                 "optional": true
               }
             },
-            "dereferencesTo": "category",
+            "dereferencesTo": "use-case",
             "rest": {
               "type": "object",
               "attributes": {
@@ -837,26 +3629,11 @@
           }
         },
         "optional": true
-      },
-      "publishedAt": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
-      "body": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "inline",
-          "name": "blockContent"
-        },
-        "optional": true
       }
     }
   },
   {
-    "name": "author",
+    "name": "guide",
     "type": "document",
     "attributes": {
       "_id": {
@@ -869,7 +3646,7 @@
         "type": "objectAttribute",
         "value": {
           "type": "string",
-          "value": "author"
+          "value": "guide"
         }
       },
       "_createdAt": {
@@ -890,7 +3667,7 @@
           "type": "string"
         }
       },
-      "name": {
+      "title": {
         "type": "objectAttribute",
         "value": {
           "type": "string"
@@ -905,7 +3682,21 @@
         },
         "optional": true
       },
-      "image": {
+      "publishedAt": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "description": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
+      "cover": {
         "type": "objectAttribute",
         "value": {
           "type": "object",
@@ -974,133 +3765,43 @@
         },
         "optional": true
       },
-      "bio": {
+      "content": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "rich-text"
+        },
+        "optional": true
+      },
+      "related": {
         "type": "objectAttribute",
         "value": {
           "type": "array",
           "of": {
             "type": "object",
             "attributes": {
-              "children": {
+              "_ref": {
                 "type": "objectAttribute",
                 "value": {
-                  "type": "array",
-                  "of": {
-                    "type": "object",
-                    "attributes": {
-                      "marks": {
-                        "type": "objectAttribute",
-                        "value": {
-                          "type": "array",
-                          "of": {
-                            "type": "string"
-                          }
-                        },
-                        "optional": true
-                      },
-                      "text": {
-                        "type": "objectAttribute",
-                        "value": {
-                          "type": "string"
-                        },
-                        "optional": true
-                      },
-                      "_type": {
-                        "type": "objectAttribute",
-                        "value": {
-                          "type": "string",
-                          "value": "span"
-                        }
-                      }
-                    },
-                    "rest": {
-                      "type": "object",
-                      "attributes": {
-                        "_key": {
-                          "type": "objectAttribute",
-                          "value": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "optional": true
-              },
-              "style": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "union",
-                  "of": [
-                    {
-                      "type": "string",
-                      "value": "normal"
-                    }
-                  ]
-                },
-                "optional": true
-              },
-              "listItem": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "union",
-                  "of": []
-                },
-                "optional": true
-              },
-              "markDefs": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "array",
-                  "of": {
-                    "type": "object",
-                    "attributes": {
-                      "href": {
-                        "type": "objectAttribute",
-                        "value": {
-                          "type": "string"
-                        },
-                        "optional": true
-                      },
-                      "_type": {
-                        "type": "objectAttribute",
-                        "value": {
-                          "type": "string",
-                          "value": "link"
-                        }
-                      }
-                    },
-                    "rest": {
-                      "type": "object",
-                      "attributes": {
-                        "_key": {
-                          "type": "objectAttribute",
-                          "value": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "optional": true
-              },
-              "level": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "number"
-                },
-                "optional": true
+                  "type": "string"
+                }
               },
               "_type": {
                 "type": "objectAttribute",
                 "value": {
                   "type": "string",
-                  "value": "block"
+                  "value": "reference"
                 }
+              },
+              "_weak": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "boolean"
+                },
+                "optional": true
               }
             },
+            "dereferencesTo": "guide",
             "rest": {
               "type": "object",
               "attributes": {
@@ -1479,6 +4180,149 @@
           "type": "objectAttribute",
           "value": {
             "type": "string"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "bottom-navigation-group",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "bottom-navigation-group"
+          }
+        },
+        "title": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "items": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "array",
+            "of": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "rest": {
+                "type": "inline",
+                "name": "text-link"
+              }
+            }
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "bottom-navigation",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "bottom-navigation"
+          }
+        },
+        "groups": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "array",
+            "of": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "rest": {
+                "type": "inline",
+                "name": "bottom-navigation-group"
+              }
+            }
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "top-navigation",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "top-navigation"
+          }
+        },
+        "items": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "array",
+            "of": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "rest": {
+                "type": "inline",
+                "name": "text-link"
+              }
+            }
+          },
+          "optional": true
+        },
+        "aside": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "array",
+            "of": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "rest": {
+                "type": "inline",
+                "name": "button-link"
+              }
+            }
           },
           "optional": true
         }

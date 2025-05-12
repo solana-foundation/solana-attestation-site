@@ -68,25 +68,555 @@ export type Geopoint = {
     alt?: number
 }
 
-export type BlockContent = Array<
-    | {
-          children?: Array<{
-              marks?: Array<string>
-              text?: string
-              _type: 'span'
+export type Settings = {
+    _id: string
+    _type: 'settings'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    topNavigation?: TopNavigation
+    bottomNavigation?: BottomNavigation
+}
+
+export type Home = {
+    _id: string
+    _type: 'home'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    content?: Array<
+        | ({
               _key: string
-          }>
-          style?: 'normal' | 'h1' | 'h2' | 'h3' | 'h4' | 'blockquote'
-          listItem?: 'bullet'
-          markDefs?: Array<{
-              href?: string
-              _type: 'link'
+          } & Hero)
+        | {
+              title?: string
+              docsLinkTitle?: string
+              docsLink?: Link
+              content?: Array<
+                  {
+                      _key: string
+                  } & Testimonial
+              >
+              _type: 'testimonials'
               _key: string
-          }>
-          level?: number
-          _type: 'block'
+          }
+        | {
+              title?: string
+              docsLinkTitle?: string
+              docsLink?: Link
+              content?: Array<
+                  {
+                      _key: string
+                  } & Step
+              >
+              _type: 'steps'
+              _key: string
+          }
+        | {
+              title?: string
+              docsLinkTitle?: string
+              docsLink?: Link
+              mode?: 'latest' | 'specific'
+              latestAmount?: number
+              references?: Array<{
+                  _ref: string
+                  _type: 'reference'
+                  _weak?: boolean
+                  _key: string
+                  [internalGroqTypeReferenceTo]?: 'use-case'
+              }>
+              _type: 'use-cases'
+              _key: string
+          }
+        | ({
+              _key: string
+          } & Quote)
+        | {
+              title?: string
+              docsLinkTitle?: string
+              docsLink?: Link
+              content?: Array<
+                  {
+                      _key: string
+                  } & CodeFile
+              >
+              _type: 'code-examples'
+              _key: string
+          }
+        | {
+              title?: string
+              docsLinkTitle?: string
+              docsLink?: Link
+              mode?: 'latest' | 'specific'
+              latestAmount?: number
+              references?: Array<{
+                  _ref: string
+                  _type: 'reference'
+                  _weak?: boolean
+                  _key: string
+                  [internalGroqTypeReferenceTo]?: 'guide'
+              }>
+              _type: 'guides'
+              _key: string
+          }
+    >
+}
+
+export type Guides = {
+    _id: string
+    _type: 'guides'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    title?: string
+    docsLinkTitle?: string
+    docsLink?: Link
+    mode?: 'latest' | 'specific'
+    latestAmount?: number
+    references?: Array<{
+        _ref: string
+        _type: 'reference'
+        _weak?: boolean
+        _key: string
+        [internalGroqTypeReferenceTo]?: 'guide'
+    }>
+}
+
+export type UseCases = {
+    _id: string
+    _type: 'use-cases'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    title?: string
+    docsLinkTitle?: string
+    docsLink?: Link
+    mode?: 'latest' | 'specific'
+    latestAmount?: number
+    references?: Array<{
+        _ref: string
+        _type: 'reference'
+        _weak?: boolean
+        _key: string
+        [internalGroqTypeReferenceTo]?: 'use-case'
+    }>
+}
+
+export type CodeExamples = {
+    _id: string
+    _type: 'code-examples'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    title?: string
+    docsLinkTitle?: string
+    docsLink?: Link
+    content?: Array<
+        {
+            _key: string
+        } & CodeFile
+    >
+}
+
+export type CodeFile = {
+    _type: 'code-file'
+    name?: string
+    type?:
+        | 'abap'
+        | 'actionscript-3'
+        | 'ada'
+        | 'adoc'
+        | 'angular-html'
+        | 'angular-ts'
+        | 'apache'
+        | 'apex'
+        | 'apl'
+        | 'applescript'
+        | 'ara'
+        | 'asciidoc'
+        | 'asm'
+        | 'astro'
+        | 'awk'
+        | 'ballerina'
+        | 'bash'
+        | 'batQuote'
+        | 'batch'
+        | 'be'
+        | 'beancount'
+        | 'berry'
+        | 'bibtex'
+        | 'bicep'
+        | 'blade'
+        | 'bsl'
+        | 'c'
+        | 'c#'
+        | 'c++'
+        | 'cadence'
+        | 'cairo'
+        | 'cdc'
+        | 'clarity'
+        | 'clj'
+        | 'clojure'
+        | 'closure-templates'
+        | 'cmake'
+        | 'cmd'
+        | 'cobol'
+        | 'codeowners'
+        | 'codeql'
+        | 'coffee'
+        | 'coffeescript'
+        | 'common-lisp'
+        | 'console'
+        | 'coq'
+        | 'cpp'
+        | 'cql'
+        | 'crystal'
+        | 'cs'
+        | 'csharp'
+        | 'css'
+        | 'csv'
+        | 'cue'
+        | 'cypher'
+        | 'd'
+        | 'dart'
+        | 'dax'
+        | 'desktop'
+        | 'diff'
+        | 'docker'
+        | 'dockerfile'
+        | 'dotenv'
+        | 'dream-maker'
+        | 'edge'
+        | 'elisp'
+        | 'elixir'
+        | 'elm'
+        | 'emacs-lisp'
+        | 'erb'
+        | 'erl'
+        | 'erlang'
+        | 'f'
+        | 'f#'
+        | 'f03'
+        | 'f08'
+        | 'f18'
+        | 'f77'
+        | 'f90'
+        | 'f95'
+        | 'fennel'
+        | 'fish'
+        | 'fluent'
+        | 'for'
+        | 'fortran-fixed-form'
+        | 'fortran-free-form'
+        | 'fs'
+        | 'fsharp'
+        | 'fsl'
+        | 'ftl'
+        | 'gdresource'
+        | 'gdscript'
+        | 'gdshader'
+        | 'genie'
+        | 'gherkin'
+        | 'git-commit'
+        | 'git-rebase'
+        | 'gjs'
+        | 'gleam'
+        | 'glimmer-js'
+        | 'glimmer-ts'
+        | 'glsl'
+        | 'gnuplot'
+        | 'go'
+        | 'gql'
+        | 'graphql'
+        | 'groovy'
+        | 'gts'
+        | 'hack'
+        | 'haml'
+        | 'handlebars'
+        | 'haskell'
+        | 'haxe'
+        | 'hbs'
+        | 'hcl'
+        | 'hjson'
+        | 'hlsl'
+        | 'hs'
+        | 'html'
+        | 'html-derivative'
+        | 'http'
+        | 'hxml'
+        | 'hy'
+        | 'imba'
+        | 'ini'
+        | 'jade'
+        | 'java'
+        | 'javascript'
+        | 'jinja'
+        | 'jison'
+        | 'jl'
+        | 'js'
+        | 'json'
+        | 'json5'
+        | 'jsonc'
+        | 'jsonl'
+        | 'jsonnet'
+        | 'jssm'
+        | 'jsx'
+        | 'julia'
+        | 'kotlin'
+        | 'kql'
+        | 'kt'
+        | 'kts'
+        | 'kusto'
+        | 'latex'
+        | 'lean'
+        | 'lean4'
+        | 'less'
+        | 'liquid'
+        | 'lisp'
+        | 'lit'
+        | 'llvm'
+        | 'log'
+        | 'logo'
+        | 'lua'
+        | 'luau'
+        | 'make'
+        | 'makefile'
+        | 'markdown'
+        | 'marko'
+        | 'matlab'
+        | 'md'
+        | 'mdc'
+        | 'mdx'
+        | 'mediawiki'
+        | 'mermaid'
+        | 'mips'
+        | 'mipsasm'
+        | 'mmd'
+        | 'mojo'
+        | 'move'
+        | 'nar'
+        | 'narrat'
+        | 'nextflow'
+        | 'nf'
+        | 'nginx'
+        | 'nim'
+        | 'nix'
+        | 'nu'
+        | 'nushell'
+        | 'objc'
+        | 'objective-c'
+        | 'objective-cpp'
+        | 'ocaml'
+        | 'pascal'
+        | 'perl'
+        | 'perl6'
+        | 'php'
+        | 'plsql'
+        | 'po'
+        | 'polar'
+        | 'postcss'
+        | 'pot'
+        | 'potx'
+        | 'powerquery'
+        | 'powershell'
+        | 'prisma'
+        | 'prolog'
+        | 'properties'
+        | 'proto'
+        | 'protobuf'
+        | 'ps'
+        | 'ps1'
+        | 'pug'
+        | 'puppet'
+        | 'purescript'
+        | 'py'
+        | 'python'
+        | 'ql'
+        | 'qml'
+        | 'qmldir'
+        | 'qss'
+        | 'r'
+        | 'racket'
+        | 'raku'
+        | 'razor'
+        | 'rb'
+        | 'reg'
+        | 'regex'
+        | 'regexp'
+        | 'rel'
+        | 'riscv'
+        | 'rs'
+        | 'rst'
+        | 'ruby'
+        | 'rust'
+        | 'sas'
+        | 'sass'
+        | 'scala'
+        | 'scheme'
+        | 'scss'
+        | 'sdbl'
+        | 'sh'
+        | 'shader'
+        | 'shaderlab'
+        | 'shell'
+        | 'shellscript'
+        | 'shellsession'
+        | 'smalltalk'
+        | 'solidity'
+        | 'soy'
+        | 'sparql'
+        | 'spl'
+        | 'splunk'
+        | 'sql'
+        | 'ssh-config'
+        | 'stata'
+        | 'styl'
+        | 'stylus'
+        | 'svelte'
+        | 'swift'
+        | 'system-verilog'
+        | 'systemd'
+        | 'talon'
+        | 'talonscript'
+        | 'tasl'
+        | 'tcl'
+        | 'templ'
+        | 'terraform'
+        | 'tex'
+        | 'tf'
+        | 'tfvars'
+        | 'toml'
+        | 'ts'
+        | 'ts-tags'
+        | 'tsp'
+        | 'tsv'
+        | 'tsx'
+        | 'turtle'
+        | 'twig'
+        | 'typ'
+        | 'typescript'
+        | 'typespec'
+        | 'typst'
+        | 'v'
+        | 'vala'
+        | 'vb'
+        | 'verilog'
+        | 'vhdl'
+        | 'vim'
+        | 'viml'
+        | 'vimscript'
+        | 'vue'
+        | 'vue-html'
+        | 'vy'
+        | 'vyper'
+        | 'wasm'
+        | 'wenyan'
+        | 'wgsl'
+        | 'wiki'
+        | 'wikitext'
+        | 'wit'
+        | 'wl'
+        | 'wolfram'
+        | 'xml'
+        | 'xsl'
+        | 'yaml'
+        | 'yml'
+        | 'zenscript'
+        | 'zig'
+        | 'zsh'
+    code?: string
+}
+
+export type Quote = {
+    _type: 'quote'
+    logo?: {
+        asset?: {
+            _ref: string
+            _type: 'reference'
+            _weak?: boolean
+            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
+        }
+        media?: unknown
+        hotspot?: SanityImageHotspot
+        crop?: SanityImageCrop
+        _type: 'image'
+    }
+    name?: string
+    testimonial?: string
+}
+
+export type Steps = {
+    _id: string
+    _type: 'steps'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    title?: string
+    docsLinkTitle?: string
+    docsLink?: Link
+    content?: Array<
+        {
+            _key: string
+        } & Step
+    >
+}
+
+export type Step = {
+    _type: 'step'
+    title?: string
+    description?: string
+}
+
+export type Testimonials = {
+    _id: string
+    _type: 'testimonials'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    title?: string
+    docsLinkTitle?: string
+    docsLink?: Link
+    content?: Array<
+        {
+            _key: string
+        } & Testimonial
+    >
+}
+
+export type Testimonial = {
+    _type: 'testimonial'
+    logo?: {
+        asset?: {
+            _ref: string
+            _type: 'reference'
+            _weak?: boolean
+            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
+        }
+        media?: unknown
+        hotspot?: SanityImageHotspot
+        crop?: SanityImageCrop
+        _type: 'image'
+    }
+    name?: string
+    layout?: 'small' | 'medium' | 'large'
+    testimonial?: string
+}
+
+export type Hero = {
+    _type: 'hero'
+    title?: string
+    content?: string
+    links?: Array<
+        {
+            _key: string
+        } & ButtonLink
+    >
+}
+
+export type RichText = Array<
+    | ({
           _key: string
-      }
+      } & CodeFile)
     | {
           asset?: {
               _ref: string
@@ -100,67 +630,77 @@ export type BlockContent = Array<
           _type: 'image'
           _key: string
       }
+    | {
+          children?: Array<{
+              marks?: Array<string>
+              text?: string
+              _type: 'span'
+              _key: string
+          }>
+          style?: 'h2' | 'h3' | 'h4' | 'normal'
+          listItem?: 'bullet'
+          markDefs?: Array<{
+              href?: string
+              _type: 'link'
+              _key: string
+          }>
+          level?: number
+          _type: 'block'
+          _key: string
+      }
 >
 
-export type Category = {
-    _id: string
-    _type: 'category'
-    _createdAt: string
-    _updatedAt: string
-    _rev: string
+export type DocReference = {
+    _type: 'doc-reference'
     title?: string
-    description?: string
+    url?: Link
 }
 
-export type Post = {
+export type ButtonLink = {
+    _type: 'button-link'
+    title?: string
+    url?: Link
+    variant?: 'primary' | 'secondary'
+    icon?: 'copy' | 'documentation' | 'github'
+    newWindow?: boolean
+}
+
+export type TextLink = {
+    _type: 'text-link'
+    title?: string
+    link?: Link
+    newWindow?: boolean
+}
+
+export type Link = {
+    _type: 'link'
+    mode?: 'external' | 'home' | 'guide-list' | 'guide' | 'use-case-list' | 'use-case'
+    url?: string
+    guide?: {
+        _ref: string
+        _type: 'reference'
+        _weak?: boolean
+        [internalGroqTypeReferenceTo]?: 'guide'
+    }
+    useCase?: {
+        _ref: string
+        _type: 'reference'
+        _weak?: boolean
+        [internalGroqTypeReferenceTo]?: 'use-case'
+    }
+}
+
+export type UseCase = {
     _id: string
-    _type: 'post'
+    _type: 'use-case'
     _createdAt: string
     _updatedAt: string
     _rev: string
     title?: string
-    subtitle?: string
-    subtitle2?: string
-    subtitle3?: string
     slug?: Slug
-    author?: {
-        _ref: string
-        _type: 'reference'
-        _weak?: boolean
-        [internalGroqTypeReferenceTo]?: 'author'
-    }
-    mainImage?: {
-        asset?: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-        }
-        media?: unknown
-        hotspot?: SanityImageHotspot
-        crop?: SanityImageCrop
-        _type: 'image'
-    }
-    categories?: Array<{
-        _ref: string
-        _type: 'reference'
-        _weak?: boolean
-        _key: string
-        [internalGroqTypeReferenceTo]?: 'category'
-    }>
     publishedAt?: string
-    body?: BlockContent
-}
-
-export type Author = {
-    _id: string
-    _type: 'author'
-    _createdAt: string
-    _updatedAt: string
-    _rev: string
-    name?: string
-    slug?: Slug
-    image?: {
+    description?: string
+    cover?: {
         asset?: {
             _ref: string
             _type: 'reference'
@@ -172,23 +712,45 @@ export type Author = {
         crop?: SanityImageCrop
         _type: 'image'
     }
-    bio?: Array<{
-        children?: Array<{
-            marks?: Array<string>
-            text?: string
-            _type: 'span'
-            _key: string
-        }>
-        style?: 'normal'
-        listItem?: never
-        markDefs?: Array<{
-            href?: string
-            _type: 'link'
-            _key: string
-        }>
-        level?: number
-        _type: 'block'
+    content?: RichText
+    related?: Array<{
+        _ref: string
+        _type: 'reference'
+        _weak?: boolean
         _key: string
+        [internalGroqTypeReferenceTo]?: 'use-case'
+    }>
+}
+
+export type Guide = {
+    _id: string
+    _type: 'guide'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    title?: string
+    slug?: Slug
+    publishedAt?: string
+    description?: string
+    cover?: {
+        asset?: {
+            _ref: string
+            _type: 'reference'
+            _weak?: boolean
+            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
+        }
+        media?: unknown
+        hotspot?: SanityImageHotspot
+        crop?: SanityImageCrop
+        _type: 'image'
+    }
+    content?: RichText
+    related?: Array<{
+        _ref: string
+        _type: 'reference'
+        _weak?: boolean
+        _key: string
+        [internalGroqTypeReferenceTo]?: 'guide'
     }>
 }
 
@@ -255,31 +817,78 @@ export type Slug = {
     source?: string
 }
 
+export type BottomNavigationGroup = {
+    _type: 'bottom-navigation-group'
+    title?: string
+    items?: Array<
+        {
+            _key: string
+        } & TextLink
+    >
+}
+
+export type BottomNavigation = {
+    _type: 'bottom-navigation'
+    groups?: Array<
+        {
+            _key: string
+        } & BottomNavigationGroup
+    >
+}
+
+export type TopNavigation = {
+    _type: 'top-navigation'
+    items?: Array<
+        {
+            _key: string
+        } & TextLink
+    >
+    aside?: Array<
+        {
+            _key: string
+        } & ButtonLink
+    >
+}
+
 export type AllSanitySchemaTypes =
     | SanityImagePaletteSwatch
     | SanityImagePalette
     | SanityImageDimensions
     | SanityFileAsset
     | Geopoint
-    | BlockContent
-    | Category
-    | Post
-    | Author
+    | Settings
+    | Home
+    | Guides
+    | UseCases
+    | CodeExamples
+    | CodeFile
+    | Quote
+    | Steps
+    | Step
+    | Testimonials
+    | Testimonial
+    | Hero
+    | RichText
+    | DocReference
+    | ButtonLink
+    | TextLink
+    | Link
+    | UseCase
+    | Guide
     | SanityImageCrop
     | SanityImageHotspot
     | SanityImageAsset
     | SanityAssetSourceData
     | SanityImageMetadata
     | Slug
+    | BottomNavigationGroup
+    | BottomNavigation
+    | TopNavigation
 export declare const internalGroqTypeReferenceTo: unique symbol
 // Source: ./src/shared/sanity/queries/posts.ts
 // Variable: POSTS_QUERY
 // Query: *[_type == "post" && defined(slug.current)][0...12]{  _id, title, slug}
-export type POSTS_QUERYResult = Array<{
-    _id: string
-    title: string | null
-    slug: Slug | null
-}>
+export type POSTS_QUERYResult = Array<never>
 
 // Query TypeMap
 import '@sanity/client'

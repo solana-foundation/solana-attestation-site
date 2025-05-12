@@ -10,11 +10,16 @@ import { defineType, defineArrayMember } from 'sanity'
  *    type: 'blockContent'
  *  }
  */
-export default defineType({
-    title: 'Block Content',
-    name: 'blockContent',
+export const richText = defineType({
+    title: 'Text',
+    name: 'rich-text',
     type: 'array',
     of: [
+        defineArrayMember({ type: 'code-file', title: 'Code' }),
+        defineArrayMember({
+            type: 'image',
+            options: { hotspot: true },
+        }),
         defineArrayMember({
             title: 'Block',
             type: 'block',
@@ -23,23 +28,17 @@ export default defineType({
             // you want and decide how you want to deal with it where you want to
             // use your content.
             styles: [
+                { title: 'Header 2', value: 'h2' },
+                { title: 'Header 3', value: 'h3' },
+                { title: 'Header 4', value: 'h4' },
                 { title: 'Normal', value: 'normal' },
-                { title: 'H1', value: 'h1' },
-                { title: 'H2', value: 'h2' },
-                { title: 'H3', value: 'h3' },
-                { title: 'H4', value: 'h4' },
-                { title: 'Quote', value: 'blockquote' },
             ],
             lists: [{ title: 'Bullet', value: 'bullet' }],
-            // Marks let you mark up inline text in the block editor.
             marks: {
-                // Decorators usually describe a single property – e.g. a typographic
-                // preference or highlighting by editors.
                 decorators: [
                     { title: 'Strong', value: 'strong' },
                     { title: 'Emphasis', value: 'em' },
                 ],
-                // Annotations can be any object structure – e.g. a link or a footnote.
                 annotations: [
                     {
                         title: 'URL',
@@ -55,13 +54,6 @@ export default defineType({
                     },
                 ],
             },
-        }),
-        // You can add additional types here. Note that you can't use
-        // primitive types such as 'string' and 'number' in the same array
-        // as a block type.
-        defineArrayMember({
-            type: 'image',
-            options: { hotspot: true },
         }),
     ],
 })
