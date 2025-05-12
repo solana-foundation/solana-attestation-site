@@ -6,7 +6,7 @@ on:
       - main
       - development
     paths:
-      - src/shared/sanity/schema/**/*
+      - src/shared/sanity/**/*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
