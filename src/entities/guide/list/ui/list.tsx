@@ -1,45 +1,22 @@
 import { List as BaseList, ListItem } from '@/shared/ui/list'
 import { FC } from 'react'
+import { fetchGuideListQuery } from '../model/guide-list-query'
 
-export const List: FC = () => {
+export const List: FC = async () => {
+    const list = await fetchGuideListQuery()
+
     return (
         <BaseList>
-            <ListItem
-                cover="/bg1.png"
-                date={new Date(2025, 3, 30)}
-                title="Issuer Playbook"
-                description="Everything an issuer needs—schema design tips, push vs. pull issuance patterns, bulk minting, and revocation best-practices for dynamic credentials."
-                href="/"
-            />
-            <ListItem
-                cover="/bg1.png"
-                date={new Date(2025, 3, 30)}
-                title="Issuer Playbook"
-                description="Everything an issuer needs—schema design tips."
-                href="/"
-            />
-            <ListItem
-                cover="/bg1.png"
-                date={new Date(2025, 3, 30)}
-                title="Issuer Playbook"
-                description="Everything an issuer needs—schema design tips, push vs. pull issuance patterns, bulk minting, and revocation best-practices for dynamic credentials."
-                href="/"
-            />
-            <ListItem
-                cover="/bg1.png"
-                date={new Date(2025, 3, 30)}
-                title="Issuer Playbook"
-                description="Everything an issuer needs—schema design tips."
-                href="/"
-            />
-            <ListItem
-                cover="/bg1.png"
-                date={new Date(2025, 3, 30)}
-                title="Issuer Playbook"
-                description="Everything an issuer needs—schema design tips, push vs. pull issuance patterns."
-                href="/"
-            />
-            <ListItem cover="/bg1.png" date={new Date(2025, 3, 30)} title="Issuer Playbook" description="Everything an issuer needs—schema." href="/" />
+            {list?.map(item => (
+                <ListItem
+                    key={item._id}
+                    date={new Date(item.publishedAt ?? '')}
+                    cover={item.cover ?? '/bg1.png'}
+                    title={item.title ?? ''}
+                    description={item.description ?? ''}
+                    href={`/guide/${item.slug ?? ''}`}
+                />
+            ))}
         </BaseList>
     )
 }

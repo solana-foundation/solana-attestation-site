@@ -1,37 +1,18 @@
 import { NextPage } from 'next'
-import { CallToAction, Guides, Hero, HowSasWorks, HowToImplement, Quote, UseCases, Using } from '@/entities/home'
+import { fetchHome } from '@/entities/home'
 import { Container } from '@/shared/ui/container'
+import { Block } from './block'
 
-export const Home: NextPage = () => (
-    <>
-        <Container as="main" layout="wide">
-            <Hero />
-        </Container>
+export const Home: NextPage = async () => {
+    const home = await fetchHome()
 
-        <Container layout="wide">
-            <Using />
-        </Container>
-
-        <Container layout="wide">
-            <HowSasWorks />
-        </Container>
-
-        <Container layout="wide">
-            <UseCases />
-        </Container>
-
-        <Quote />
-
-        <Container layout="wide">
-            <HowToImplement />
-        </Container>
-
-        <Container layout="wide">
-            <Guides />
-        </Container>
-
-        <Container layout="wide">
-            <CallToAction />
-        </Container>
-    </>
-)
+    return home?.map(block =>
+        block._type !== 'quote' ? (
+            <Container key={block._key} layout="wide">
+                <Block content={block} />
+            </Container>
+        ) : (
+            <Block key={block._key} content={block} />
+        )
+    )
+}

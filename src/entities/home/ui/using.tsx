@@ -1,34 +1,28 @@
 import { FC } from 'react'
 import { Using as UsingBase, UsingItem } from '@/shared/ui/using'
-import { Section } from '@/shared/ui/section'
+import { ExtractElementByType } from '@/shared/utils/types'
+import { HOME_QUERYResult } from '@/shared/sanity'
+import { Section } from '@/entities/sanity/section'
 
-export const Using: FC = () => {
-    return (
-        <Section title="Teams using SAS">
-            <UsingBase>
-                <UsingItem name="Blue Wolf" image="/using/1.png" />
-                <UsingItem name="Xometry" image="/using/8.png" />
-                <UsingItem
-                    name="Autodesk"
-                    image="/using/4.png"
-                    size="large"
-                    quote="Integrating SAS allowed us to gate community access based on social trust scores — no more bots, no more headaches. It’s fast, neutral, and built exactly the way a Solana-native attestation layer should be."
-                />
-                <UsingItem name="SHV Energy" image="/using/3.png" />
-                <UsingItem name="WAF" image="/using/5.png" />
-                <UsingItem name="Xometry" image="/using/7.png" />
-                <UsingItem name="MiddleGround Capital" image="/using/2.png" />
-                <UsingItem name="Blue Wolf" image="/using/9.png" />
-                <UsingItem name="WAF" image="/using/10.png" />
-                <UsingItem
-                    name="TTI"
-                    image="/using/6.png"
-                    size="medium"
-                    quote="Simple SDK, but very powerful results. Our matchmaking now filters out bots using onchain attestations."
-                />
-                <UsingItem name="SHV Energy" image="/using/11.png" />
-                <UsingItem name="MiddleGround Capital" image="/using/12.png" />
-            </UsingBase>
-        </Section>
-    )
-}
+type Content = ExtractElementByType<HOME_QUERYResult, 'testimonials'>
+
+export const isUsingBlock = (value: unknown): value is Content => !!value && typeof value === 'object' && '_type' in value && value._type === 'testimonials'
+
+export const Using: FC<{ content: Content }> = ({ content }) => (
+    <Section content={content}>
+        <UsingBase>
+            {content?.content
+                ?.filter(item => !!item.name && !!item.logo)
+                .map(item => (
+                    <UsingItem
+                        key={item._key}
+                        name={item.name!}
+                        image={item.logo!}
+                        size={item.layout === 'small' ? 'default' : item.layout}
+                        quote={item.layout === 'medium' || item.layout === 'large' ? (item.testimonial ?? undefined) : undefined}
+                    />
+                ))}
+            <UsingItem name="MiddleGround Capital" image="/using/12.png" />
+        </UsingBase>
+    </Section>
+)

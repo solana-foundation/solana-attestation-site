@@ -1,12 +1,12 @@
+import { HOME_QUERYResult } from '@/shared/sanity'
 import { Quote as QuoteBase } from '@/shared/ui/quote'
+import { ExtractElementByType } from '@/shared/utils/types'
 import { FC } from 'react'
 
-export const Quote: FC = () => {
-    return (
-        <QuoteBase
-            name="Autodesk"
-            image="/using/4.png"
-            quote="Integrating SAS allowed us to gate community access based on social trust scores — no more bots, no more headaches. It’s fast, neutral, and built exactly the way a Solana-native attestation layer should be."
-        />
-    )
-}
+type Content = ExtractElementByType<HOME_QUERYResult, 'quote'>
+
+export const isQuoteBlock = (value: unknown): value is Content => !!value && typeof value === 'object' && '_type' in value && value._type === 'quote'
+
+export const Quote: FC<{ content: Content }> = ({ content }) => (
+    <QuoteBase name={content?.name || ''} image={content?.logo || ''} quote={content?.testimonial || ''} />
+)

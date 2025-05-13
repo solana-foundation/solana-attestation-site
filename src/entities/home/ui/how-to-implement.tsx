@@ -1,50 +1,25 @@
+import { HOME_QUERYResult } from '@/shared/sanity'
 import { Code } from '@/shared/ui/code'
-import { Section } from '@/shared/ui/section'
+import { Section } from '@/entities/sanity/section'
+import { ExtractElementByType } from '@/shared/utils/types'
 import { FC } from 'react'
+import { BundledLanguage } from 'shiki'
 
-export const HowToImplement: FC = () => {
-    const file1 = `
-// PDA ["schema", credential, name, version]
-#[derive(Clone, Debug, PartialEq, ShankAccount)]
-#[repr(C)]
-pub struct Schema {
-    /// The Credential that manages this Schema
-    pub credential: Pubkey,
-    /// Name of Schema, in UTF8-encoded byte string.
-    pub name: Vec<u8>,
-    /// Description of what schema does, in UTF8-encoded byte string.
-    pub description: Vec<u8>,
-    /// The schema layout where data will be encoded with, in array of SchemaDataTypes.
-    pub layout: Vec<u8>,
-    /// Field names of schema stored as serialized array of Strings.
-    /// First 4 bytes are number of bytes in array.
-    pub field_names: Vec<u8>,
-    /// Whether or not this schema is still valid
-    pub is_paused: bool,
-    /// Version of this schema. Defaults to 1.
-    pub version: u8,
-}
-`.trim()
+type Content = ExtractElementByType<HOME_QUERYResult, 'code-examples'>
 
-    const file2 = `
-pub struct Schema {
-    /// The Credential that manages this Schema
-    pub credential: Pubkey,
-    /// Name of Schema, in UTF8-encoded byte string.
-    pub name: Vec<u8>,
-    /// Description of what schema does, in UTF8-encoded byte string.
-    pub description: Vec<u8>,
-}
-`.trim()
+export const isHowToImplementBlock = (value: unknown): value is Content =>
+    !!value && typeof value === 'object' && '_type' in value && value._type === 'code-examples'
 
-    return (
-        <Section title="How to implement" linkTitle="More in docs" linkHref="/">
-            <Code
-                files={[
-                    { name: 'create-any-schema-for-your-use-case.rs', content: file1, language: 'rust' },
-                    { name: 'attest-with-any-schema.rs', content: file2, language: 'rust' },
-                ]}
-            />
-        </Section>
-    )
-}
+export const HowToImplement: FC<{ content: Content }> = ({ content }) => (
+    <Section content={content}>
+        <Code
+            files={
+                content.content?.map(item => ({
+                    name: item.name || '',
+                    language: (item.type ?? 'rust') as BundledLanguage,
+                    content: item.code || '',
+                })) ?? []
+            }
+        />
+    </Section>
+)

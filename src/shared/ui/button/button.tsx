@@ -32,11 +32,12 @@ const buttonVariants = cva(['flex flex-nowrap items-center justify-center gap-2'
 type ButtonProps = PropsWithChildren<{
     icon?: ComponentType<{ className?: string }>
     href: string | UrlObject
+    newWindow?: boolean
     onClick?: () => void | Promise<void>
 }> &
     VariantProps<typeof buttonVariants>
 
-export const Button: FC<ButtonProps> = ({ children, icon: Icon, variant = 'primary', size = 'default', fill = false, href, onClick }) => {
+export const Button: FC<ButtonProps> = ({ children, icon: Icon, variant = 'primary', size = 'default', fill = false, href, newWindow = false, onClick }) => {
     const content = Icon ? (
         <>
             <Icon className={iconVariants({ size })} />
@@ -47,7 +48,7 @@ export const Button: FC<ButtonProps> = ({ children, icon: Icon, variant = 'prima
     )
 
     return href ? (
-        <Link className={buttonVariants({ variant, size, fill })} href={href} onClick={onClick}>
+        <Link className={buttonVariants({ variant, size, fill })} href={href} target={newWindow ? '_blank' : undefined} onClick={onClick}>
             {content}
         </Link>
     ) : (
