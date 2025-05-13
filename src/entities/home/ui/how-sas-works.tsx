@@ -1,18 +1,22 @@
-import { Section } from '@/shared/ui/section'
+import { HOME_QUERYResult } from '@/shared/sanity'
+import { Section } from '@/entities/sanity/section'
 import { Tree } from '@/shared/ui/tree'
+import { ExtractElementByType } from '@/shared/utils/types'
 import { FC } from 'react'
 
-export const HowSasWorks: FC = () => {
-    return (
-        <Section title="How SAS works?">
-            <Tree
-                items={[
-                    { title: 'Issuer', description: 'Defines credential schema (or re‑uses an existing one) and signs attestation data via SAS SDK' },
-                    { title: 'SAS Program', description: 'On‑chain contract verifies issuer signature & writes attestation record' },
-                    { title: 'Holder', description: 'Receives the attestation (push or pull), stores reference in their wallet' },
-                    { title: 'Verifier', description: 'Requests presentation; holder supplies attestation hash & signature' },
-                ]}
-            />
-        </Section>
-    )
-}
+type Content = ExtractElementByType<HOME_QUERYResult, 'steps'>
+
+export const isHowSasWorksBlock = (value: unknown): value is Content => !!value && typeof value === 'object' && '_type' in value && value._type === 'steps'
+
+export const HowSasWorks: FC<{ content: Content }> = ({ content }) => (
+    <Section content={content}>
+        <Tree
+            items={
+                content?.content?.map(item => ({
+                    title: item.title || '',
+                    description: item.description || '',
+                })) ?? []
+            }
+        />
+    </Section>
+)

@@ -12,6 +12,14 @@ export const settings = defineType({
             name: 'bottom-navigation',
             title: 'Bottom Navigation',
         },
+        {
+            name: 'use-cases',
+            title: 'Use Cases',
+        },
+        {
+            name: 'guides',
+            title: 'Guides',
+        },
     ],
     fields: [
         defineField({
@@ -24,11 +32,43 @@ export const settings = defineType({
             type: 'bottom-navigation',
             group: 'bottom-navigation',
         }),
+        defineField({
+            name: 'useCasesPageTitle',
+            type: 'string',
+            group: 'use-cases',
+            title: 'Use Cases Page Title',
+            validation: rule => rule.required(),
+        }),
+        defineField({
+            name: 'useCasesPageDescription',
+            type: 'string',
+            group: 'use-cases',
+            title: 'Use Cases Page Description',
+        }),
+        defineField({
+            name: 'guidesPageTitle',
+            type: 'string',
+            group: 'guides',
+            title: 'Guides Page Title',
+            validation: rule => rule.required(),
+        }),
+        defineField({
+            name: 'guidesPageDescription',
+            type: 'string',
+            group: 'guides',
+            title: 'Guides Page Description',
+        }),
     ],
     preview: {
         prepare: () => ({ title: 'Settings' }),
     },
     initialValue: {
+        useCasesPageTitle: 'Use Cases',
+        useCasesPageDescription: 'Role‑based guides to issue, verify, and integrate SAS credentials — copy‑paste ready.',
+
+        guidesPageTitle: 'Guides',
+        guidesPageDescription: 'Role‑based guides to issue, verify, and integrate SAS credentials — copy‑paste ready.',
+
         bottomNavigation: {
             _type: 'bottom-navigation',
             groups: [

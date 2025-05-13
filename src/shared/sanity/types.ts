@@ -76,6 +76,10 @@ export type Settings = {
     _rev: string
     topNavigation?: TopNavigation
     bottomNavigation?: BottomNavigation
+    useCasesPageTitle?: string
+    useCasesPageDescription?: string
+    guidesPageTitle?: string
+    guidesPageDescription?: string
 }
 
 export type Home = {
@@ -885,15 +889,1093 @@ export type AllSanitySchemaTypes =
     | BottomNavigation
     | TopNavigation
 export declare const internalGroqTypeReferenceTo: unique symbol
-// Source: ./src/shared/sanity/queries/posts.ts
-// Variable: POSTS_QUERY
-// Query: *[_type == "post" && defined(slug.current)][0...12]{  _id, title, slug}
-export type POSTS_QUERYResult = Array<never>
+// Source: ./src/entities/guide/list/model/guide-list-query.ts
+// Variable: GUIDE_LIST_QUERY
+// Query: *[_type == "guide"] {    _id,    title,    "slug": slug.current,    description,    publishedAt,    "cover": cover.asset -> url} | order(publishedAt desc)
+export type GUIDE_LIST_QUERYResult = Array<{
+    _id: string
+    title: string | null
+    slug: string | null
+    description: string | null
+    publishedAt: string | null
+    cover: string | null
+}>
+
+// Source: ./src/entities/guide/list/model/guide-query.ts
+// Variable: GUIDE_QUERY
+// Query: *[_type == "guide" && slug.current == $slug][0]
+export type GUIDE_QUERYResult = {
+    _id: string
+    _type: 'guide'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    title?: string
+    slug?: Slug
+    publishedAt?: string
+    description?: string
+    cover?: {
+        asset?: {
+            _ref: string
+            _type: 'reference'
+            _weak?: boolean
+            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
+        }
+        media?: unknown
+        hotspot?: SanityImageHotspot
+        crop?: SanityImageCrop
+        _type: 'image'
+    }
+    content?: RichText
+    related?: Array<{
+        _ref: string
+        _type: 'reference'
+        _weak?: boolean
+        _key: string
+        [internalGroqTypeReferenceTo]?: 'guide'
+    }>
+} | null
+
+// Source: ./src/entities/guide/list/model/guide-title-query.ts
+// Variable: GUIDES_TITLE_QUERY
+// Query: *[_id == "settings"][0]{  guidesPageTitle,  guidesPageDescription}
+export type GUIDES_TITLE_QUERYResult =
+    | {
+          guidesPageTitle: null
+          guidesPageDescription: null
+      }
+    | {
+          guidesPageTitle: string | null
+          guidesPageDescription: string | null
+      }
+    | null
+
+// Source: ./src/entities/home/model/guides-query.ts
+// Variable: LATEST_GUIDES_QUERY
+// Query: *[_type == "guide"] {    _id,    title,    "slug": slug.current,    description,    publishedAt,    "cover": cover.asset -> url} | order(publishedAt desc) [0...$limit]
+export type LATEST_GUIDES_QUERYResult = Array<{
+    _id: string
+    title: string | null
+    slug: string | null
+    description: string | null
+    publishedAt: string | null
+    cover: string | null
+}>
+
+// Source: ./src/entities/home/model/home-query.ts
+// Variable: HOME_QUERY
+// Query: *[_id == "home"] {  "content": content[] {    _key,    _type,    ...select(  defined(docsLinkTitle) && defined(docsLink) => {    "docs": {      "title": docsLinkTitle,      "link": docsLink {    _type,    ...select(      mode == "external" => {        "mode": "external",        url      },      mode == "guide-list" => {        "mode": "guide-list",      },      mode == "guide" => {        "mode": "guide",        guide -> {          _id,          _type,          title,          "slug": slug.current        }      },      mode == "home" => {        "mode": "home",      },      mode == "use-case-list" => {        "mode": "use-case-list",      },      mode == "use-case" => {        "mode": "use-case",        useCase -> {          _id,          title,          "slug": slug.current        }      }    )}    }  }),    ...select(      _type == "hero" => {  title,  content,  links[] {  _key,  _type,  title,  url {    _type,    ...select(      mode == "external" => {        "mode": "external",        url      },      mode == "guide-list" => {        "mode": "guide-list",      },      mode == "guide" => {        "mode": "guide",        guide -> {          _id,          _type,          title,          "slug": slug.current        }      },      mode == "home" => {        "mode": "home",      },      mode == "use-case-list" => {        "mode": "use-case-list",      },      mode == "use-case" => {        "mode": "use-case",        useCase -> {          _id,          title,          "slug": slug.current        }      }    )},  variant,  icon,  newWindow},},      _type == "testimonials" => {  title,  content[] {    _key,    _type,    "logo": logo.asset -> url,    name,    ...select(      layout == "small" => {        "layout": "small",      },      layout == "medium" => {        "layout": "medium",        testimonial      },      layout == "large" => {        "layout": "large",        testimonial      },    )  }},      _type == "steps" => {  title,  content[] {    _key,    _type,    title,    description  }},      _type == "use-cases" => {  title,  ...select(    mode == "latest" => {      "mode": "latest",      "amount": latestAmount    },    mode == "specific" => {      "mode": "specific",      references[] -> {        _id,        _type,        title,        description,        "slug": slug.current,        "cover": cover.asset -> url      }    },            )},      _type == "quote" => {  "logo": logo.asset -> url,  name,  testimonial},      _type == "code-examples" => {  title,  content[] {  _key,  _type,  name,  type,  code}},      _type == "guides" => {  title,  ...select(    mode == "latest" => {      "mode": "latest",      "amount": latestAmount    },    mode == "specific" => {      "mode": "specific",      references[] -> {        _id,        _type,        title,        description,        publishedAt,        "slug": slug.current,        "cover": cover.asset -> url      }    },            )}    )  }}[0].content
+export type HOME_QUERYResult =
+    | Array<{
+          _key: string
+          _type: 'code-file'
+      }>
+    | Array<{
+          _key: string
+          _type: 'step'
+      }>
+    | Array<{
+          _key: string
+          _type: 'testimonial'
+      }>
+    | Array<
+          | {
+                _key: string
+                _type: 'block'
+            }
+          | {
+                _key: string
+                _type: 'code-file'
+            }
+          | {
+                _key: string
+                _type: 'image'
+            }
+      >
+    | Array<
+          | {
+                _key: string
+                _type: 'code-examples'
+                docs: {
+                    title: string | null
+                    link:
+                        | {
+                              _type: 'link'
+                              mode: 'guide'
+                              guide: {
+                                  _id: string
+                                  _type: 'guide'
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'external'
+                              url: string | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'guide-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'home'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case'
+                              useCase: {
+                                  _id: string
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | null
+                }
+                title: string | null
+                content: Array<{
+                    _key: string
+                    _type: 'code-file'
+                    name: string | null
+                    type:
+                        | 'abap'
+                        | 'actionscript-3'
+                        | 'ada'
+                        | 'adoc'
+                        | 'angular-html'
+                        | 'angular-ts'
+                        | 'apache'
+                        | 'apex'
+                        | 'apl'
+                        | 'applescript'
+                        | 'ara'
+                        | 'asciidoc'
+                        | 'asm'
+                        | 'astro'
+                        | 'awk'
+                        | 'ballerina'
+                        | 'bash'
+                        | 'batch'
+                        | 'batQuote'
+                        | 'be'
+                        | 'beancount'
+                        | 'berry'
+                        | 'bibtex'
+                        | 'bicep'
+                        | 'blade'
+                        | 'bsl'
+                        | 'c'
+                        | 'c#'
+                        | 'c++'
+                        | 'cadence'
+                        | 'cairo'
+                        | 'cdc'
+                        | 'clarity'
+                        | 'clj'
+                        | 'clojure'
+                        | 'closure-templates'
+                        | 'cmake'
+                        | 'cmd'
+                        | 'cobol'
+                        | 'codeowners'
+                        | 'codeql'
+                        | 'coffee'
+                        | 'coffeescript'
+                        | 'common-lisp'
+                        | 'console'
+                        | 'coq'
+                        | 'cpp'
+                        | 'cql'
+                        | 'crystal'
+                        | 'cs'
+                        | 'csharp'
+                        | 'css'
+                        | 'csv'
+                        | 'cue'
+                        | 'cypher'
+                        | 'd'
+                        | 'dart'
+                        | 'dax'
+                        | 'desktop'
+                        | 'diff'
+                        | 'docker'
+                        | 'dockerfile'
+                        | 'dotenv'
+                        | 'dream-maker'
+                        | 'edge'
+                        | 'elisp'
+                        | 'elixir'
+                        | 'elm'
+                        | 'emacs-lisp'
+                        | 'erb'
+                        | 'erl'
+                        | 'erlang'
+                        | 'f'
+                        | 'f#'
+                        | 'f03'
+                        | 'f08'
+                        | 'f18'
+                        | 'f77'
+                        | 'f90'
+                        | 'f95'
+                        | 'fennel'
+                        | 'fish'
+                        | 'fluent'
+                        | 'for'
+                        | 'fortran-fixed-form'
+                        | 'fortran-free-form'
+                        | 'fs'
+                        | 'fsharp'
+                        | 'fsl'
+                        | 'ftl'
+                        | 'gdresource'
+                        | 'gdscript'
+                        | 'gdshader'
+                        | 'genie'
+                        | 'gherkin'
+                        | 'git-commit'
+                        | 'git-rebase'
+                        | 'gjs'
+                        | 'gleam'
+                        | 'glimmer-js'
+                        | 'glimmer-ts'
+                        | 'glsl'
+                        | 'gnuplot'
+                        | 'go'
+                        | 'gql'
+                        | 'graphql'
+                        | 'groovy'
+                        | 'gts'
+                        | 'hack'
+                        | 'haml'
+                        | 'handlebars'
+                        | 'haskell'
+                        | 'haxe'
+                        | 'hbs'
+                        | 'hcl'
+                        | 'hjson'
+                        | 'hlsl'
+                        | 'hs'
+                        | 'html-derivative'
+                        | 'html'
+                        | 'http'
+                        | 'hxml'
+                        | 'hy'
+                        | 'imba'
+                        | 'ini'
+                        | 'jade'
+                        | 'java'
+                        | 'javascript'
+                        | 'jinja'
+                        | 'jison'
+                        | 'jl'
+                        | 'js'
+                        | 'json'
+                        | 'json5'
+                        | 'jsonc'
+                        | 'jsonl'
+                        | 'jsonnet'
+                        | 'jssm'
+                        | 'jsx'
+                        | 'julia'
+                        | 'kotlin'
+                        | 'kql'
+                        | 'kt'
+                        | 'kts'
+                        | 'kusto'
+                        | 'latex'
+                        | 'lean'
+                        | 'lean4'
+                        | 'less'
+                        | 'liquid'
+                        | 'lisp'
+                        | 'lit'
+                        | 'llvm'
+                        | 'log'
+                        | 'logo'
+                        | 'lua'
+                        | 'luau'
+                        | 'make'
+                        | 'makefile'
+                        | 'markdown'
+                        | 'marko'
+                        | 'matlab'
+                        | 'md'
+                        | 'mdc'
+                        | 'mdx'
+                        | 'mediawiki'
+                        | 'mermaid'
+                        | 'mips'
+                        | 'mipsasm'
+                        | 'mmd'
+                        | 'mojo'
+                        | 'move'
+                        | 'nar'
+                        | 'narrat'
+                        | 'nextflow'
+                        | 'nf'
+                        | 'nginx'
+                        | 'nim'
+                        | 'nix'
+                        | 'nu'
+                        | 'nushell'
+                        | 'objc'
+                        | 'objective-c'
+                        | 'objective-cpp'
+                        | 'ocaml'
+                        | 'pascal'
+                        | 'perl'
+                        | 'perl6'
+                        | 'php'
+                        | 'plsql'
+                        | 'po'
+                        | 'polar'
+                        | 'postcss'
+                        | 'pot'
+                        | 'potx'
+                        | 'powerquery'
+                        | 'powershell'
+                        | 'prisma'
+                        | 'prolog'
+                        | 'properties'
+                        | 'proto'
+                        | 'protobuf'
+                        | 'ps'
+                        | 'ps1'
+                        | 'pug'
+                        | 'puppet'
+                        | 'purescript'
+                        | 'py'
+                        | 'python'
+                        | 'ql'
+                        | 'qml'
+                        | 'qmldir'
+                        | 'qss'
+                        | 'r'
+                        | 'racket'
+                        | 'raku'
+                        | 'razor'
+                        | 'rb'
+                        | 'reg'
+                        | 'regex'
+                        | 'regexp'
+                        | 'rel'
+                        | 'riscv'
+                        | 'rs'
+                        | 'rst'
+                        | 'ruby'
+                        | 'rust'
+                        | 'sas'
+                        | 'sass'
+                        | 'scala'
+                        | 'scheme'
+                        | 'scss'
+                        | 'sdbl'
+                        | 'sh'
+                        | 'shader'
+                        | 'shaderlab'
+                        | 'shell'
+                        | 'shellscript'
+                        | 'shellsession'
+                        | 'smalltalk'
+                        | 'solidity'
+                        | 'soy'
+                        | 'sparql'
+                        | 'spl'
+                        | 'splunk'
+                        | 'sql'
+                        | 'ssh-config'
+                        | 'stata'
+                        | 'styl'
+                        | 'stylus'
+                        | 'svelte'
+                        | 'swift'
+                        | 'system-verilog'
+                        | 'systemd'
+                        | 'talon'
+                        | 'talonscript'
+                        | 'tasl'
+                        | 'tcl'
+                        | 'templ'
+                        | 'terraform'
+                        | 'tex'
+                        | 'tf'
+                        | 'tfvars'
+                        | 'toml'
+                        | 'ts-tags'
+                        | 'ts'
+                        | 'tsp'
+                        | 'tsv'
+                        | 'tsx'
+                        | 'turtle'
+                        | 'twig'
+                        | 'typ'
+                        | 'typescript'
+                        | 'typespec'
+                        | 'typst'
+                        | 'v'
+                        | 'vala'
+                        | 'vb'
+                        | 'verilog'
+                        | 'vhdl'
+                        | 'vim'
+                        | 'viml'
+                        | 'vimscript'
+                        | 'vue-html'
+                        | 'vue'
+                        | 'vy'
+                        | 'vyper'
+                        | 'wasm'
+                        | 'wenyan'
+                        | 'wgsl'
+                        | 'wiki'
+                        | 'wikitext'
+                        | 'wit'
+                        | 'wl'
+                        | 'wolfram'
+                        | 'xml'
+                        | 'xsl'
+                        | 'yaml'
+                        | 'yml'
+                        | 'zenscript'
+                        | 'zig'
+                        | 'zsh'
+                        | null
+                    code: string | null
+                }> | null
+            }
+          | {
+                _key: string
+                _type: 'guides'
+                docs: {
+                    title: string | null
+                    link:
+                        | {
+                              _type: 'link'
+                              mode: 'guide'
+                              guide: {
+                                  _id: string
+                                  _type: 'guide'
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'external'
+                              url: string | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'guide-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'home'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case'
+                              useCase: {
+                                  _id: string
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | null
+                }
+                title: string | null
+                mode: 'latest'
+                amount: number | null
+            }
+          | {
+                _key: string
+                _type: 'guides'
+                docs: {
+                    title: string | null
+                    link:
+                        | {
+                              _type: 'link'
+                              mode: 'guide'
+                              guide: {
+                                  _id: string
+                                  _type: 'guide'
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'external'
+                              url: string | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'guide-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'home'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case'
+                              useCase: {
+                                  _id: string
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | null
+                }
+                title: string | null
+                mode: 'specific'
+                references: Array<{
+                    _id: string
+                    _type: 'guide'
+                    title: string | null
+                    description: string | null
+                    publishedAt: string | null
+                    slug: string | null
+                    cover: string | null
+                }> | null
+            }
+          | {
+                _key: string
+                _type: 'hero'
+                title: string | null
+                content: string | null
+                links: Array<{
+                    _key: string
+                    _type: 'button-link'
+                    title: string | null
+                    url:
+                        | {
+                              _type: 'link'
+                              mode: 'guide'
+                              guide: {
+                                  _id: string
+                                  _type: 'guide'
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'external'
+                              url: string | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'guide-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'home'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case'
+                              useCase: {
+                                  _id: string
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | null
+                    variant: 'primary' | 'secondary' | null
+                    icon: 'copy' | 'documentation' | 'github' | null
+                    newWindow: boolean | null
+                }> | null
+            }
+          | {
+                _key: string
+                _type: 'quote'
+                logo: string | null
+                name: string | null
+                testimonial: string | null
+            }
+          | {
+                _key: string
+                _type: 'steps'
+                docs: {
+                    title: string | null
+                    link:
+                        | {
+                              _type: 'link'
+                              mode: 'guide'
+                              guide: {
+                                  _id: string
+                                  _type: 'guide'
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'external'
+                              url: string | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'guide-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'home'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case'
+                              useCase: {
+                                  _id: string
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | null
+                }
+                title: string | null
+                content: Array<{
+                    _key: string
+                    _type: 'step'
+                    title: string | null
+                    description: string | null
+                }> | null
+            }
+          | {
+                _key: string
+                _type: 'testimonials'
+                docs: {
+                    title: string | null
+                    link:
+                        | {
+                              _type: 'link'
+                              mode: 'guide'
+                              guide: {
+                                  _id: string
+                                  _type: 'guide'
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'external'
+                              url: string | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'guide-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'home'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case'
+                              useCase: {
+                                  _id: string
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | null
+                }
+                title: string | null
+                content: Array<
+                    | {
+                          _key: string
+                          _type: 'testimonial'
+                          logo: string | null
+                          name: string | null
+                          layout: 'large'
+                          testimonial: string | null
+                      }
+                    | {
+                          _key: string
+                          _type: 'testimonial'
+                          logo: string | null
+                          name: string | null
+                          layout: 'medium'
+                          testimonial: string | null
+                      }
+                    | {
+                          _key: string
+                          _type: 'testimonial'
+                          logo: string | null
+                          name: string | null
+                          layout: 'small'
+                      }
+                > | null
+            }
+          | {
+                _key: string
+                _type: 'use-cases'
+                docs: {
+                    title: string | null
+                    link:
+                        | {
+                              _type: 'link'
+                              mode: 'guide'
+                              guide: {
+                                  _id: string
+                                  _type: 'guide'
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'external'
+                              url: string | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'guide-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'home'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case'
+                              useCase: {
+                                  _id: string
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | null
+                }
+                title: string | null
+                mode: 'latest'
+                amount: number | null
+            }
+          | {
+                _key: string
+                _type: 'use-cases'
+                docs: {
+                    title: string | null
+                    link:
+                        | {
+                              _type: 'link'
+                              mode: 'guide'
+                              guide: {
+                                  _id: string
+                                  _type: 'guide'
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'external'
+                              url: string | null
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'guide-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'home'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case-list'
+                          }
+                        | {
+                              _type: 'link'
+                              mode: 'use-case'
+                              useCase: {
+                                  _id: string
+                                  title: string | null
+                                  slug: string | null
+                              } | null
+                          }
+                        | null
+                }
+                title: string | null
+                mode: 'specific'
+                references: Array<{
+                    _id: string
+                    _type: 'use-case'
+                    title: string | null
+                    description: string | null
+                    slug: string | null
+                    cover: string | null
+                }> | null
+            }
+      >
+    | null
+
+// Source: ./src/entities/home/model/use-cases-query.ts
+// Variable: LATEST_USE_CASES_QUERY
+// Query: *[_type == "use-case"] {    _id,    title,    "slug": slug.current,    description,    "cover": cover.asset -> url} | order(publishedAt desc) [0...$limit]
+export type LATEST_USE_CASES_QUERYResult = Array<{
+    _id: string
+    title: string | null
+    slug: string | null
+    description: string | null
+    cover: string | null
+}>
+
+// Source: ./src/entities/page-footer/model/bottom-navigation-query.ts
+// Variable: BOTTOM_NAVIGATION_QUERY
+// Query: *[_id == "settings"][0]{  bottomNavigation {    groups[] {      _key,      _type,      title,      items[] {        _key,        _type,        title,        newWindow,        link {    _type,    ...select(      mode == "external" => {        "mode": "external",        url      },      mode == "guide-list" => {        "mode": "guide-list",      },      mode == "guide" => {        "mode": "guide",        guide -> {          _id,          _type,          title,          "slug": slug.current        }      },      mode == "home" => {        "mode": "home",      },      mode == "use-case-list" => {        "mode": "use-case-list",      },      mode == "use-case" => {        "mode": "use-case",        useCase -> {          _id,          title,          "slug": slug.current        }      }    )}      }    }  }}.bottomNavigation.groups
+export type BOTTOM_NAVIGATION_QUERYResult = Array<{
+    _key: string
+    _type: 'bottom-navigation-group'
+    title: string | null
+    items: Array<{
+        _key: string
+        _type: 'text-link'
+        title: string | null
+        newWindow: boolean | null
+        link:
+            | {
+                  _type: 'link'
+                  mode: 'guide'
+                  guide: {
+                      _id: string
+                      _type: 'guide'
+                      title: string | null
+                      slug: string | null
+                  } | null
+              }
+            | {
+                  _type: 'link'
+                  mode: 'external'
+                  url: string | null
+              }
+            | {
+                  _type: 'link'
+                  mode: 'guide-list'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'home'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'use-case-list'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'use-case'
+                  useCase: {
+                      _id: string
+                      title: string | null
+                      slug: string | null
+                  } | null
+              }
+            | null
+    }> | null
+}> | null
+
+// Source: ./src/entities/page-header/model/top-navigation-query.ts
+// Variable: TOP_NAVIGATION_QUERY
+// Query: *[_id == "settings"][0]{  topNavigation {    aside[0] {  _key,  _type,  title,  url {    _type,    ...select(      mode == "external" => {        "mode": "external",        url      },      mode == "guide-list" => {        "mode": "guide-list",      },      mode == "guide" => {        "mode": "guide",        guide -> {          _id,          _type,          title,          "slug": slug.current        }      },      mode == "home" => {        "mode": "home",      },      mode == "use-case-list" => {        "mode": "use-case-list",      },      mode == "use-case" => {        "mode": "use-case",        useCase -> {          _id,          title,          "slug": slug.current        }      }    )},  variant,  icon,  newWindow},    items[] {      _key,      _type,      title,      link {    _type,    ...select(      mode == "external" => {        "mode": "external",        url      },      mode == "guide-list" => {        "mode": "guide-list",      },      mode == "guide" => {        "mode": "guide",        guide -> {          _id,          _type,          title,          "slug": slug.current        }      },      mode == "home" => {        "mode": "home",      },      mode == "use-case-list" => {        "mode": "use-case-list",      },      mode == "use-case" => {        "mode": "use-case",        useCase -> {          _id,          title,          "slug": slug.current        }      }    )},      newWindow    }  }}.topNavigation
+export type TOP_NAVIGATION_QUERYResult = null | {
+    aside: {
+        _key: string
+        _type: 'button-link'
+        title: string | null
+        url:
+            | {
+                  _type: 'link'
+                  mode: 'guide'
+                  guide: {
+                      _id: string
+                      _type: 'guide'
+                      title: string | null
+                      slug: string | null
+                  } | null
+              }
+            | {
+                  _type: 'link'
+                  mode: 'external'
+                  url: string | null
+              }
+            | {
+                  _type: 'link'
+                  mode: 'guide-list'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'home'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'use-case-list'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'use-case'
+                  useCase: {
+                      _id: string
+                      title: string | null
+                      slug: string | null
+                  } | null
+              }
+            | null
+        variant: 'primary' | 'secondary' | null
+        icon: 'copy' | 'documentation' | 'github' | null
+        newWindow: boolean | null
+    } | null
+    items: Array<{
+        _key: string
+        _type: 'text-link'
+        title: string | null
+        link:
+            | {
+                  _type: 'link'
+                  mode: 'guide'
+                  guide: {
+                      _id: string
+                      _type: 'guide'
+                      title: string | null
+                      slug: string | null
+                  } | null
+              }
+            | {
+                  _type: 'link'
+                  mode: 'external'
+                  url: string | null
+              }
+            | {
+                  _type: 'link'
+                  mode: 'guide-list'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'home'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'use-case-list'
+              }
+            | {
+                  _type: 'link'
+                  mode: 'use-case'
+                  useCase: {
+                      _id: string
+                      title: string | null
+                      slug: string | null
+                  } | null
+              }
+            | null
+        newWindow: boolean | null
+    }> | null
+}
+
+// Source: ./src/entities/use-case/list/model/use-case-list-query.ts
+// Variable: USE_CASE_LIST_QUERY
+// Query: *[_type == "use-case"] {    _id,    title,    "slug": slug.current,    description,    publishedAt,    "cover": cover.asset -> url} | order(publishedAt desc)
+export type USE_CASE_LIST_QUERYResult = Array<{
+    _id: string
+    title: string | null
+    slug: string | null
+    description: string | null
+    publishedAt: string | null
+    cover: string | null
+}>
+
+// Source: ./src/entities/use-case/list/model/use-case-query.ts
+// Variable: USE_CASE_QUERY
+// Query: *[_type == "use-case" && slug.current == $slug][0]
+export type USE_CASE_QUERYResult = {
+    _id: string
+    _type: 'use-case'
+    _createdAt: string
+    _updatedAt: string
+    _rev: string
+    title?: string
+    slug?: Slug
+    publishedAt?: string
+    description?: string
+    cover?: {
+        asset?: {
+            _ref: string
+            _type: 'reference'
+            _weak?: boolean
+            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
+        }
+        media?: unknown
+        hotspot?: SanityImageHotspot
+        crop?: SanityImageCrop
+        _type: 'image'
+    }
+    content?: RichText
+    related?: Array<{
+        _ref: string
+        _type: 'reference'
+        _weak?: boolean
+        _key: string
+        [internalGroqTypeReferenceTo]?: 'use-case'
+    }>
+} | null
+
+// Source: ./src/entities/use-case/list/model/use-case-title-query.ts
+// Variable: USE_CASE_TITLE_QUERY
+// Query: *[_id == "settings"][0]{  useCasesPageTitle,  useCasesPageDescription}
+export type USE_CASE_TITLE_QUERYResult =
+    | {
+          useCasesPageTitle: null
+          useCasesPageDescription: null
+      }
+    | {
+          useCasesPageTitle: string | null
+          useCasesPageDescription: string | null
+      }
+    | null
 
 // Query TypeMap
 import '@sanity/client'
 declare module '@sanity/client' {
     interface SanityQueries {
-        '*[_type == "post" && defined(slug.current)][0...12]{\n  _id, title, slug\n}': POSTS_QUERYResult
+        '\n*[_type == "guide"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n} | order(publishedAt desc)\n': GUIDE_LIST_QUERYResult
+        '\n*[_type == "guide" && slug.current == $slug][0]\n': GUIDE_QUERYResult
+        '\n*[_id == "settings"][0]{\n  guidesPageTitle,\n  guidesPageDescription\n}\n': GUIDES_TITLE_QUERYResult
+        '\n*[_type == "guide"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n} | order(publishedAt desc) [0...$limit]\n': LATEST_GUIDES_QUERYResult
+        '*[_id == "home"] {\n  "content": content[] {\n    _key,\n    _type,\n\n    ...select(\n  defined(docsLinkTitle) && defined(docsLink) => {\n    "docs": {\n      "title": docsLinkTitle,\n      "link": docsLink {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n}\n    }\n  }\n),\n\n    ...select(\n      _type == "hero" => {\n  title,\n  content,\n  links[] {\n  _key,\n  _type,\n  title,\n  url {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n},\n  variant,\n  icon,\n  newWindow\n},\n},\n      _type == "testimonials" => {\n  title,\n  content[] {\n    _key,\n    _type,\n    "logo": logo.asset -> url,\n    name,\n    ...select(\n      layout == "small" => {\n        "layout": "small",\n      },\n      layout == "medium" => {\n        "layout": "medium",\n        testimonial\n      },\n      layout == "large" => {\n        "layout": "large",\n        testimonial\n      },\n    )\n  }\n},\n      _type == "steps" => {\n  title,\n  content[] {\n    _key,\n    _type,\n    title,\n    description\n  }\n},\n      _type == "use-cases" => {\n  title,\n  ...select(\n    mode == "latest" => {\n      "mode": "latest",\n      "amount": latestAmount\n    },\n    mode == "specific" => {\n      "mode": "specific",\n      references[] -> {\n        _id,\n        _type,\n        title,\n        description,\n        "slug": slug.current,\n        "cover": cover.asset -> url\n      }\n    },          \n  )\n},\n      _type == "quote" => {\n  "logo": logo.asset -> url,\n  name,\n  testimonial\n},\n      _type == "code-examples" => {\n  title,\n  content[] {\n  _key,\n  _type,\n  name,\n  type,\n  code\n}\n},\n      _type == "guides" => {\n  title,\n  ...select(\n    mode == "latest" => {\n      "mode": "latest",\n      "amount": latestAmount\n    },\n    mode == "specific" => {\n      "mode": "specific",\n      references[] -> {\n        _id,\n        _type,\n        title,\n        description,\n        publishedAt,\n        "slug": slug.current,\n        "cover": cover.asset -> url\n      }\n    },          \n  )\n}\n    )\n  }\n}[0].content': HOME_QUERYResult
+        '\n*[_type == "use-case"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    "cover": cover.asset -> url\n} | order(publishedAt desc) [0...$limit]\n': LATEST_USE_CASES_QUERYResult
+        '\n*[_id == "settings"][0]{\n  bottomNavigation {\n    groups[] {\n      _key,\n      _type,\n      title,\n      items[] {\n        _key,\n        _type,\n        title,\n        newWindow,\n        link {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n}\n      }\n    }\n  }\n}.bottomNavigation.groups\n': BOTTOM_NAVIGATION_QUERYResult
+        '\n*[_id == "settings"][0]{\n  topNavigation {\n    aside[0] {\n  _key,\n  _type,\n  title,\n  url {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n},\n  variant,\n  icon,\n  newWindow\n},\n    items[] {\n      _key,\n      _type,\n      title,\n      link {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n},\n      newWindow\n    }\n  }\n}.topNavigation\n': TOP_NAVIGATION_QUERYResult
+        '\n*[_type == "use-case"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n} | order(publishedAt desc)\n': USE_CASE_LIST_QUERYResult
+        '\n*[_type == "use-case" && slug.current == $slug][0]\n': USE_CASE_QUERYResult
+        '\n*[_id == "settings"][0]{\n  useCasesPageTitle,\n  useCasesPageDescription\n}\n': USE_CASE_TITLE_QUERYResult
     }
 }

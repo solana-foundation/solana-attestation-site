@@ -1,13 +1,16 @@
 import { Container } from '@/shared/ui/container'
 import { Section } from '@/shared/ui/section'
 import { NextPage } from 'next'
-import { List as BaseList } from '@/entities/use-case/list'
+import { List as BaseList, fetchUseCaseTitleQuery } from '@/entities/use-case/list'
 
-export const List: NextPage = () => {
+export const List: NextPage = async () => {
+    const title = await fetchUseCaseTitleQuery()
+
     return (
         <Container as="main" layout="narrow">
-            <Section title="Use cases" subTitle="Role‑based guides to issue, verify, and integrate SAS credentials — copy‑paste ready."></Section>
-            <BaseList />
+            <Section title={title?.useCasesPageTitle || ''} subTitle={title?.useCasesPageDescription || ''}>
+                <BaseList />
+            </Section>
         </Container>
     )
 }
