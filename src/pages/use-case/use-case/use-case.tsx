@@ -1,7 +1,6 @@
 import { fetchUseCaseQuery } from '@/entities/use-case/list'
-import { Code } from '@/shared/ui/code'
 import { Container } from '@/shared/ui/container'
-import { Section } from '@/shared/ui/section'
+import { PageContent, PageContentHeader, PageContentRelated } from '@/shared/ui/page-content'
 import { NextPage } from 'next'
 import { notFound } from 'next/navigation'
 
@@ -11,25 +10,20 @@ export const UseCase: NextPage<{ params: Promise<{ slug: string }> }> = async ({
     const document = await fetchUseCaseQuery(slug)
     if (!document) return notFound()
 
-    const { content, ...metadata } = document
+    const { title, description, publishedAt, content, related } = document
+
     return (
         <Container layout="narrow">
-            <Section title={metadata.title || ''} subTitle={metadata.description}>
-                <Code
-                    files={[
-                        {
-                            name: 'schema.json',
-                            language: 'json',
-                            content: JSON.stringify(metadata, null, 2),
-                        },
-                        {
-                            name: 'content.json',
-                            language: 'json',
-                            content: JSON.stringify(content, null, 2),
-                        },
-                    ]}
-                />
-            </Section>
+            <PageContentHeader
+                title={title || 'Use Case'}
+                description={description ?? ''}
+                publishedAt={publishedAt ? new Date(publishedAt) : undefined}
+                type="Use Case"
+            />
+            {content && <PageContent content={content} />}
+            {related && related.length > 0 && (
+                <PageContentRelated title="Check other use cases" urlPath="use-case" linkTitle="Check More" linkHref="/use-case" items={related} />
+            )}
         </Container>
     )
 }

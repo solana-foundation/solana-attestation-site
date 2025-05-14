@@ -3,9 +3,10 @@
 import clsx from 'clsx'
 import { FC, ReactNode, useState } from 'react'
 import copy from 'copy-to-clipboard'
-import { Icon } from '../icon'
+import { Icon } from '@/shared/ui/icon'
 
 type CodeTabsProps = {
+    className?: string
     tabs: {
         title: string
         file: string
@@ -13,11 +14,11 @@ type CodeTabsProps = {
     }[]
 }
 
-export const CodeTabs: FC<CodeTabsProps> = ({ tabs }) => {
+export const CodeTabs: FC<CodeTabsProps> = ({ className, tabs }) => {
     const [activeTab, setActiveTab] = useState<number>(0)
 
     return (
-        <div>
+        <div className={className}>
             <div className="flex flex-row flex-nowrap">
                 {tabs.map((tab, index) => (
                     <button
