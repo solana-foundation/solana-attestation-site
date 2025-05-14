@@ -1,7 +1,6 @@
 import { fetchGuideQuery } from '@/entities/guide/list'
-import { Code } from '@/shared/ui/code'
 import { Container } from '@/shared/ui/container'
-import { Section } from '@/shared/ui/section'
+import { PageContent, PageContentHeader, PageContentRelated } from '@/shared/ui/page-content'
 import { NextPage } from 'next'
 import { notFound } from 'next/navigation'
 
@@ -11,25 +10,20 @@ export const Guide: NextPage<{ params: Promise<{ slug: string }> }> = async ({ p
     const document = await fetchGuideQuery(slug)
     if (!document) return notFound()
 
-    const { content, ...metadata } = document
+    const { title, description, publishedAt, content, related } = document
+
     return (
         <Container layout="narrow">
-            <Section title={metadata.title || ''} subTitle={metadata.description}>
-                <Code
-                    files={[
-                        {
-                            name: 'schema.json',
-                            language: 'json',
-                            content: JSON.stringify(metadata, null, 2),
-                        },
-                        {
-                            name: 'content.json',
-                            language: 'json',
-                            content: JSON.stringify(content, null, 2),
-                        },
-                    ]}
-                />
-            </Section>
+            <PageContentHeader
+                title={title || 'Guide'}
+                description={description ?? ''}
+                publishedAt={publishedAt ? new Date(publishedAt) : undefined}
+                type="Guide"
+            />
+            {content && <PageContent content={content} />}
+            {related && related.length > 0 && (
+                <PageContentRelated title="Learn with other guides" urlPath="guide" linkTitle="Check all guides" linkHref="/guide" items={related} />
+            )}
         </Container>
     )
 }

@@ -1,16 +1,18 @@
+import clsx from 'clsx'
 import Link from 'next/link'
 import { FC, PropsWithChildren, ReactNode } from 'react'
 import type { UrlObject } from 'url'
 
 type SectionProps = PropsWithChildren<{
+    className?: string
     title: string
     subTitle?: string | ReactNode
     linkHref?: string | UrlObject
     linkTitle?: string
 }>
 
-export const Section: FC<SectionProps> = ({ children, title, subTitle, linkHref, linkTitle }) => (
-    <section className="pt-10 pb-16 space-y-7 sm:space-y-9">
+export const Section: FC<SectionProps> = ({ children, className, title, subTitle, linkHref, linkTitle }) => (
+    <section className={clsx(className, 'pt-10 pb-16 space-y-7 sm:space-y-9')}>
         <header className="grid grid-cols-1 sm:grid-cols-[1fr_auto] items-end gap-x-4">
             <div className="flex flex-col gap-8">
                 <h2 className="text-xl sm:text-2xl font-semibold uppercase tracking-tight">{title}</h2>

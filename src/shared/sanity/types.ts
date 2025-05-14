@@ -903,37 +903,23 @@ export type GUIDE_LIST_QUERYResult = Array<{
 
 // Source: ./src/entities/guide/list/model/guide-query.ts
 // Variable: GUIDE_QUERY
-// Query: *[_type == "guide" && slug.current == $slug][0]
+// Query: *[_type == "guide" && slug.current == $slug][0] {  _id,  _type,  title,  description,  publishedAt,  content,  related[] -> {    _id,    _type,    title,    "slug": slug.current,    description,    publishedAt,    "cover": cover.asset -> url  }}
 export type GUIDE_QUERYResult = {
     _id: string
     _type: 'guide'
-    _createdAt: string
-    _updatedAt: string
-    _rev: string
-    title?: string
-    slug?: Slug
-    publishedAt?: string
-    description?: string
-    cover?: {
-        asset?: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-        }
-        media?: unknown
-        hotspot?: SanityImageHotspot
-        crop?: SanityImageCrop
-        _type: 'image'
-    }
-    content?: RichText
-    related?: Array<{
-        _ref: string
-        _type: 'reference'
-        _weak?: boolean
-        _key: string
-        [internalGroqTypeReferenceTo]?: 'guide'
-    }>
+    title: string | null
+    description: string | null
+    publishedAt: string | null
+    content: RichText | null
+    related: Array<{
+        _id: string
+        _type: 'guide'
+        title: string | null
+        slug: string | null
+        description: string | null
+        publishedAt: string | null
+        cover: string | null
+    }> | null
 } | null
 
 // Source: ./src/entities/guide/list/model/guide-title-query.ts
@@ -1915,37 +1901,23 @@ export type USE_CASE_LIST_QUERYResult = Array<{
 
 // Source: ./src/entities/use-case/list/model/use-case-query.ts
 // Variable: USE_CASE_QUERY
-// Query: *[_type == "use-case" && slug.current == $slug][0]
+// Query: *[_type == "use-case" && slug.current == $slug][0] {  _id,  _type,  title,  description,  publishedAt,  content,  related[] -> {    _id,    _type,    title,    "slug": slug.current,    description,    publishedAt,    "cover": cover.asset -> url  }}
 export type USE_CASE_QUERYResult = {
     _id: string
     _type: 'use-case'
-    _createdAt: string
-    _updatedAt: string
-    _rev: string
-    title?: string
-    slug?: Slug
-    publishedAt?: string
-    description?: string
-    cover?: {
-        asset?: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-        }
-        media?: unknown
-        hotspot?: SanityImageHotspot
-        crop?: SanityImageCrop
-        _type: 'image'
-    }
-    content?: RichText
-    related?: Array<{
-        _ref: string
-        _type: 'reference'
-        _weak?: boolean
-        _key: string
-        [internalGroqTypeReferenceTo]?: 'use-case'
-    }>
+    title: string | null
+    description: string | null
+    publishedAt: string | null
+    content: RichText | null
+    related: Array<{
+        _id: string
+        _type: 'use-case'
+        title: string | null
+        slug: string | null
+        description: string | null
+        publishedAt: string | null
+        cover: string | null
+    }> | null
 } | null
 
 // Source: ./src/entities/use-case/list/model/use-case-title-query.ts
@@ -1967,7 +1939,7 @@ import '@sanity/client'
 declare module '@sanity/client' {
     interface SanityQueries {
         '\n*[_type == "guide"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n} | order(publishedAt desc)\n': GUIDE_LIST_QUERYResult
-        '\n*[_type == "guide" && slug.current == $slug][0]\n': GUIDE_QUERYResult
+        '\n*[_type == "guide" && slug.current == $slug][0] {\n  _id,\n  _type,\n  title,\n  description,\n  publishedAt,\n  content,\n  related[] -> {\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n\n  }\n}\n': GUIDE_QUERYResult
         '\n*[_id == "settings"][0]{\n  guidesPageTitle,\n  guidesPageDescription\n}\n': GUIDES_TITLE_QUERYResult
         '\n*[_type == "guide"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n} | order(publishedAt desc) [0...$limit]\n': LATEST_GUIDES_QUERYResult
         '*[_id == "home"] {\n  "content": content[] {\n    _key,\n    _type,\n\n    ...select(\n  defined(docsLinkTitle) && defined(docsLink) => {\n    "docs": {\n      "title": docsLinkTitle,\n      "link": docsLink {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n}\n    }\n  }\n),\n\n    ...select(\n      _type == "hero" => {\n  title,\n  content,\n  links[] {\n  _key,\n  _type,\n  title,\n  url {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n},\n  variant,\n  icon,\n  newWindow\n},\n},\n      _type == "testimonials" => {\n  title,\n  content[] {\n    _key,\n    _type,\n    "logo": logo.asset -> url,\n    name,\n    ...select(\n      layout == "small" => {\n        "layout": "small",\n      },\n      layout == "medium" => {\n        "layout": "medium",\n        testimonial\n      },\n      layout == "large" => {\n        "layout": "large",\n        testimonial\n      },\n    )\n  }\n},\n      _type == "steps" => {\n  title,\n  content[] {\n    _key,\n    _type,\n    title,\n    description\n  }\n},\n      _type == "use-cases" => {\n  title,\n  ...select(\n    mode == "latest" => {\n      "mode": "latest",\n      "amount": latestAmount\n    },\n    mode == "specific" => {\n      "mode": "specific",\n      references[] -> {\n        _id,\n        _type,\n        title,\n        description,\n        "slug": slug.current,\n        "cover": cover.asset -> url\n      }\n    },          \n  )\n},\n      _type == "quote" => {\n  "logo": logo.asset -> url,\n  name,\n  testimonial\n},\n      _type == "code-examples" => {\n  title,\n  content[] {\n  _key,\n  _type,\n  name,\n  type,\n  code\n}\n},\n      _type == "guides" => {\n  title,\n  ...select(\n    mode == "latest" => {\n      "mode": "latest",\n      "amount": latestAmount\n    },\n    mode == "specific" => {\n      "mode": "specific",\n      references[] -> {\n        _id,\n        _type,\n        title,\n        description,\n        publishedAt,\n        "slug": slug.current,\n        "cover": cover.asset -> url\n      }\n    },          \n  )\n}\n    )\n  }\n}[0].content': HOME_QUERYResult
@@ -1975,7 +1947,7 @@ declare module '@sanity/client' {
         '\n*[_id == "settings"][0]{\n  bottomNavigation {\n    groups[] {\n      _key,\n      _type,\n      title,\n      items[] {\n        _key,\n        _type,\n        title,\n        newWindow,\n        link {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n}\n      }\n    }\n  }\n}.bottomNavigation.groups\n': BOTTOM_NAVIGATION_QUERYResult
         '\n*[_id == "settings"][0]{\n  topNavigation {\n    aside[0] {\n  _key,\n  _type,\n  title,\n  url {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n},\n  variant,\n  icon,\n  newWindow\n},\n    items[] {\n      _key,\n      _type,\n      title,\n      link {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n},\n      newWindow\n    }\n  }\n}.topNavigation\n': TOP_NAVIGATION_QUERYResult
         '\n*[_type == "use-case"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n} | order(publishedAt desc)\n': USE_CASE_LIST_QUERYResult
-        '\n*[_type == "use-case" && slug.current == $slug][0]\n': USE_CASE_QUERYResult
+        '\n*[_type == "use-case" && slug.current == $slug][0] {\n  _id,\n  _type,\n  title,\n  description,\n  publishedAt,\n  content,\n  related[] -> {\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n\n  }\n}\n': USE_CASE_QUERYResult
         '\n*[_id == "settings"][0]{\n  useCasesPageTitle,\n  useCasesPageDescription\n}\n': USE_CASE_TITLE_QUERYResult
     }
 }

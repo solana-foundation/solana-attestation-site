@@ -1,0 +1,51 @@
+.numberedHeadings {
+    counter-reset: h1Counter;
+}
+
+.numberedHeadings h2 {
+    counter-reset: h2Counter;
+    counter-increment: h1Counter;
+}
+
+.numberedHeadings h2::before {
+    content: counter(h1Counter) '. ';
+}
+
+.numberedHeadings h3 {
+    counter-reset: h3Counter;
+    counter-increment: h2Counter;
+    position: relative;
+}
+
+.numberedHeadings h3::before {
+    content: counter(h1Counter) '.' counter(h2Counter) '. ';
+}
+
+.numberedHeadings h4 {
+    counter-increment: h3Counter;
+    position: relative;
+}
+
+.numberedHeadings h4::before {
+    content: counter(h1Counter) '.' counter(h2Counter) '.' counter(h3Counter) '. ';
+}
+
+@media (min-width: 640px) {
+    .numberedHeadings h2,
+    .numberedHeadings h3,
+    .numberedHeadings h4 {
+        position: relative;
+    }
+
+    .numberedHeadings h2::before,
+    .numberedHeadings h3::before,
+    .numberedHeadings h4::before {
+        position: absolute;
+        left: -120px;
+        width: 120px;
+        text-align: right;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
