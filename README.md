@@ -1,6 +1,6 @@
-# Solana Attestation Service
+# Solana Attestation Website
 
-This is a Next.js-based project that provides attestation services on the Solana blockchain. The project uses Sanity as a headless CMS for content management and follows the Feature-Sliced Design (FSD) architecture for better code organization and maintainability.
+This is a Next.js-based website that describes attestation services available on the Solana blockchain.
 
 ### Important Links
 
