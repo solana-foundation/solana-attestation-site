@@ -29,7 +29,7 @@ export const CodeTabs: FC<CodeTabsProps> = ({ className, tabs }) => {
                             'overflow-hidden whitespace-nowrap text-ellipsis',
                             'border-black border-t border-r',
                             index === 0 ? 'border-l' : undefined,
-                            activeTab !== index ? 'border-b' : 'bg-[#f8f9fa]'
+                            activeTab !== index ? 'border-b hover:cursor-pointer hover:bg-[#E6FFFF] active:bg-[#E6FFFF]/50' : 'bg-[#f8f9fa]'
                         )}
                         onClick={() => setActiveTab(index)}
                     >
