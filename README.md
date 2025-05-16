@@ -85,4 +85,3 @@ Schema changes are automatically deployed when:
 - Changes are merged to the `main` branch (deploys to production CMS)
 
 This automatic deployment is triggered whenever files in the `src/shared/sanity` directory are modified during a build.
-`
