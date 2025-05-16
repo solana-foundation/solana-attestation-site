@@ -3113,6 +3113,10 @@
                   "of": [
                     {
                       "type": "string",
+                      "value": "normal"
+                    },
+                    {
+                      "type": "string",
                       "value": "h2"
                     },
                     {
@@ -3122,10 +3126,6 @@
                     {
                       "type": "string",
                       "value": "h4"
-                    },
-                    {
-                      "type": "string",
-                      "value": "normal"
                     }
                   ]
                 },

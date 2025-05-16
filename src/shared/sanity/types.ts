@@ -641,7 +641,7 @@ export type RichText = Array<
               _type: 'span'
               _key: string
           }>
-          style?: 'h2' | 'h3' | 'h4' | 'normal'
+          style?: 'normal' | 'h2' | 'h3' | 'h4'
           listItem?: 'bullet'
           markDefs?: Array<{
               href?: string
