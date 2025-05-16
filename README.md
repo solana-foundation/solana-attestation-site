@@ -8,7 +8,7 @@ This is a Next.js-based website that describes attestation services available on
 - **Production CMS**: [https://attest.sanity.studio](https://attest.sanity.studio)
 
 - **Staging CMS**: [https://attest-dev.sanity.studio](https://attest-dev.sanity.studio)
-- **Staging Site**: Not yet deployed
+- **Staging Site**: [https://solana-attestation-site-staging.vercel.app](https://solana-attestation-site-staging.vercel.app)
 
 ## Project Structure
 
