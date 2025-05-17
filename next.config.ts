@@ -6,15 +6,31 @@ const nextConfig: NextConfig = {
     experimental: {
         mdxRs: true,
     },
-    basePath: '/docs',
 
     async rewrites() {
-        return [
-            {
-                source: '/docs/:path*',
-                destination: '/docs/:path*',
-            },
-        ]
+        switch (process.env.ENVIRONMENT) {
+            case 'development':
+                return [
+                    {
+                        source: '/docs',
+                        destination: 'https://solana-attestation-site-staging-docs.vercel.app/docs',
+                    },
+                ]
+            case 'production':
+                return [
+                    {
+                        source: '/docs',
+                        destination: 'https://solana-attestation-site-docs.vercel.app/docs',
+                    },
+                ]
+            default:
+                return [
+                    {
+                        source: '/docs',
+                        destination: 'http://localhost:5173/docs',
+                    },
+                ]
+        }
     },
 }
 

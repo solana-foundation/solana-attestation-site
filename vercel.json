@@ -1,7 +1,12 @@
 {
     "rewrites": [
-      { "source": "/docs/:path*", "destination": "https://your-vocs-project.vercel.app/:path*" },
-      { "source": "/:path*", "destination": "https://your-nextjs-project.vercel.app/:path*" }
+        {
+            "source": "/docs",
+            "destination": "https://solana-attestation-site-docs.vercel.app/docs"
+        },
+        {
+            "source": "/docs",
+            "destination": "https://solana-attestation-site-docs-dev.vercel.app/docs"
+        }
     ]
-  }
-  
+}
