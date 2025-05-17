@@ -127,7 +127,7 @@ export type Home = {
                   _type: 'reference'
                   _weak?: boolean
                   _key: string
-                  [internalGroqTypeReferenceTo]?: 'use-case'
+                  [internalGroqTypeReferenceTo]?: 'use-cases'
               }>
               _type: 'use-cases'
               _key: string
@@ -158,7 +158,7 @@ export type Home = {
                   _type: 'reference'
                   _weak?: boolean
                   _key: string
-                  [internalGroqTypeReferenceTo]?: 'guide'
+                  [internalGroqTypeReferenceTo]?: 'guides'
               }>
               _type: 'guides'
               _key: string
@@ -182,7 +182,7 @@ export type Guides = {
         _type: 'reference'
         _weak?: boolean
         _key: string
-        [internalGroqTypeReferenceTo]?: 'guide'
+        [internalGroqTypeReferenceTo]?: 'guides'
     }>
 }
 
@@ -202,7 +202,7 @@ export type UseCases = {
         _type: 'reference'
         _weak?: boolean
         _key: string
-        [internalGroqTypeReferenceTo]?: 'use-case'
+        [internalGroqTypeReferenceTo]?: 'use-cases'
     }>
 }
 
@@ -1431,12 +1431,12 @@ export type HOME_QUERYResult =
                 mode: 'specific'
                 references: Array<{
                     _id: string
-                    _type: 'guide'
+                    _type: 'guides'
                     title: string | null
-                    description: string | null
-                    publishedAt: string | null
-                    slug: string | null
-                    cover: string | null
+                    description: null
+                    publishedAt: null
+                    slug: null
+                    cover: null
                 }> | null
             }
           | {
@@ -1717,11 +1717,11 @@ export type HOME_QUERYResult =
                 mode: 'specific'
                 references: Array<{
                     _id: string
-                    _type: 'use-case'
+                    _type: 'use-cases'
                     title: string | null
-                    description: string | null
-                    slug: string | null
-                    cover: string | null
+                    description: null
+                    slug: null
+                    cover: null
                 }> | null
             }
       >

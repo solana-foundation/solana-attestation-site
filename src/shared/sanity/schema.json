@@ -674,7 +674,7 @@
                             "optional": true
                           }
                         },
-                        "dereferencesTo": "use-case",
+                        "dereferencesTo": "use-cases",
                         "rest": {
                           "type": "object",
                           "attributes": {
@@ -869,7 +869,7 @@
                             "optional": true
                           }
                         },
-                        "dereferencesTo": "guide",
+                        "dereferencesTo": "guides",
                         "rest": {
                           "type": "object",
                           "attributes": {
@@ -1021,7 +1021,7 @@
                 "optional": true
               }
             },
-            "dereferencesTo": "guide",
+            "dereferencesTo": "guides",
             "rest": {
               "type": "object",
               "attributes": {
@@ -1148,7 +1148,7 @@
                 "optional": true
               }
             },
-            "dereferencesTo": "use-case",
+            "dereferencesTo": "use-cases",
             "rest": {
               "type": "object",
               "attributes": {
