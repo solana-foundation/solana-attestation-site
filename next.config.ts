@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
                 return [
                     {
                         source: '/docs',
-                        destination: 'https://solana-attestation-site-docs.vercel.app/docs',
+                        destination: 'https://solana-attestation-site-docs.vercel.app',
                     },
                     {
                         source: '/docs/:path*',
@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
                 return [
                     {
                         source: '/docs',
-                        destination: 'http://localhost:5173/docs',
+                        destination: 'http://localhost:5173',
                     },
                     {
                         source: '/docs/:path*',
