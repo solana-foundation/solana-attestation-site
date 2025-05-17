@@ -13,21 +13,33 @@ const nextConfig: NextConfig = {
                 return [
                     {
                         source: '/docs',
-                        destination: 'https://solana-attestation-site-staging-docs.vercel.app',
+                        destination: 'https://solana-attestation-site-docs-dev.vercel.app/docs',
+                    },
+                    {
+                        source: '/docs/:path*',
+                        destination: 'https://solana-attestation-site-docs-dev.vercel.app/docs/:path*',
                     },
                 ]
             case 'production':
                 return [
                     {
                         source: '/docs',
-                        destination: 'https://solana-attestation-site-docs.vercel.app',
+                        destination: 'https://solana-attestation-site-docs.vercel.app/docs',
+                    },
+                    {
+                        source: '/docs/:path*',
+                        destination: 'https://solana-attestation-site-docs.vercel.app/docs/:path*',
                     },
                 ]
             default:
                 return [
                     {
                         source: '/docs',
-                        destination: 'http://localhost:5173',
+                        destination: 'http://localhost:5173/docs',
+                    },
+                    {
+                        source: '/docs/:path*',
+                        destination: 'http://localhost:5173/docs/:path*',
                     },
                 ]
         }
