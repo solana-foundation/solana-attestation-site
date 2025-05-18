@@ -14,31 +14,22 @@ const nextConfig: NextConfig = {
                 ? 'https://solana-attestation-site-docs-dev.vercel.app'
                 : 'http://localhost:5173'
 
-        return [
-            // Main docs route
-            {
-                source: '/docs',
-                destination: docsBaseUrl,
-            },
-            // All docs paths including nested routes
-            {
-                source: '/docs/:path*',
-                destination: `${docsBaseUrl}/:path*`,
-            },
-            // Assets and static files
-            {
-                source: '/docs/_assets/:path*',
-                destination: `${docsBaseUrl}/_assets/:path*`,
-            },
-            {
-                source: '/docs/_next/:path*',
-                destination: `${docsBaseUrl}/_next/:path*`,
-            },
-            {
-                source: '/docs/static/:path*',
-                destination: `${docsBaseUrl}/static/:path*`,
-            }
-        ]
+        return {
+            beforeFiles: [
+                {
+                    source: '/docs',
+                    destination: `${docsBaseUrl}/`,
+                },
+                {
+                    source: '/docs/',
+                    destination: `${docsBaseUrl}/`,
+                },
+                {
+                    source: '/docs/:path*',
+                    destination: `${docsBaseUrl}/:path*`,
+                }
+            ]
+        }
     },
 }
 
