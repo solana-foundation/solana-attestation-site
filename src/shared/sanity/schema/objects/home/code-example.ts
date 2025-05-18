@@ -9,7 +9,7 @@ export const codeExample = defineType({
             type: 'string',
             title: 'Title',
             description: 'Section title',
-            placeholder: 'e.g. "How to implement"',
+            placeholder: 'e.g. "How to integrate"',
             initialValue: '',
             validation: rule => [rule.required(), rule.max(120)],
         }),

@@ -2,7 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
     title: 'SAS',
-    description: 'Documentation for Solana Attestation Servie',
+    description: 'Documentation for the Solana Attestation Servie',
     font: {
         default: {
             google: 'Geist Mono',
@@ -19,10 +19,16 @@ export default defineConfig({
         light: '/logo.svg',
         dark: '/logo.svg',
       },
+      socials: [
+        {
+            icon: 'github',
+            link: 'https://github.com/solana-foundation/solana-attestation-service',
+        },
+      ],
     sidebar: [
         {
             text: 'Getting Started',
-            link: '/docs/getting-started',
+            link: '/docs',
         },
         {
             text: "Guides",
