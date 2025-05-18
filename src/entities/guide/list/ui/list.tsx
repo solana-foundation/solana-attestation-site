@@ -14,7 +14,7 @@ export const List: FC = async () => {
                     cover={item.cover ?? '/bg1.png'}
                     title={item.title ?? ''}
                     description={item.description ?? ''}
-                    href={`/guide/${item.slug ?? ''}`}
+                    href={`/guides/${item.slug ?? ''}`}
                 />
             ))}
         </BaseList>

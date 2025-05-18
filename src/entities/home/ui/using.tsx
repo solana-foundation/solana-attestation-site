@@ -22,7 +22,6 @@ export const Using: FC<{ content: Content }> = ({ content }) => (
                         quote={item.layout === 'medium' || item.layout === 'large' ? (item.testimonial ?? undefined) : undefined}
                     />
                 ))}
-            <UsingItem name="MiddleGround Capital" image="/using/12.png" />
         </UsingBase>
     </Section>
 )

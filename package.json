@@ -1,5 +1,5 @@
 {
-  "name": "solana-sas",
+  "name": "solana-attestation-site",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,10 @@
     "typegen": "sanity schema extract --path=./src/shared/sanity/schema.json && sanity typegen generate",
     "sanity:dev": "sanity dev",
     "sanity:build": "sanity build",
-    "sanity:deploy": "sanity deploy"
+    "sanity:deploy": "sanity deploy",
+    "docs:dev": "vocs dev",
+    "docs:build": "vocs build",
+    "docs:preview": "vocs preview"
   },
   "dependencies": {
     "@sanity/client": "^6.29.1",
@@ -23,26 +26,27 @@
     "clsx": "^2.1.1",
     "copy-to-clipboard": "^3.3.3",
     "next": "15.3.1",
-    "next-sanity": "^9.10.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "shiki": "^3.4.0",
-    "styled-components": "^6.1.17"
+    "next-sanity": "^9.11.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "shiki": "^3.4.2",
+    "styled-components": "^6.1.18",
+    "vocs": "^1.0.11"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
+    "@eslint/eslintrc": "^3.3.1",
     "@sanity/eslint-config-studio": "^5.0.2",
     "@sanity/vision": "^3.88.3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
+    "@tailwindcss/postcss": "^4.1.7",
+    "@types/node": "^20.17.47",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "eslint": "^9.27.0",
     "eslint-config-next": "15.3.1",
     "prettier": "^3.5.3",
     "sanity": "^3.88.3",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "tailwindcss": "^4.1.7",
+    "typescript": "^5.8.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

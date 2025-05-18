@@ -64,7 +64,7 @@ export const guides = defineType({
                     name: 'references',
                     type: 'reference',
                     description: 'Pick documents to display',
-                    to: [{ type: 'guide' }],
+                    to: [{ type: 'guides' }],
                 }),
             ],
             hidden: ({ parent }) => parent?.mode !== 'specific',

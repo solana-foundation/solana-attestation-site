@@ -64,7 +64,7 @@ export const useCases = defineType({
                     name: 'references',
                     type: 'reference',
                     description: 'Pick documents to display',
-                    to: [{ type: 'use-case' }],
+                    to: [{ type: 'use-cases' }],
                 }),
             ],
             hidden: ({ parent }) => parent?.mode !== 'specific',

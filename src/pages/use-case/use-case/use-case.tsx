@@ -22,7 +22,7 @@ export const UseCase: NextPage<{ params: Promise<{ slug: string }> }> = async ({
             />
             {content && <PageContent content={content} />}
             {related && related.length > 0 && (
-                <PageContentRelated title="Check other use cases" urlPath="use-case" linkTitle="Check More" linkHref="/use-case" items={related} />
+                <PageContentRelated title="View other use cases" urlPath="use-cases" linkTitle="View More" linkHref="/use-cases" items={related} />
             )}
         </Container>
     )
