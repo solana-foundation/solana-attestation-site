@@ -29,7 +29,7 @@ export default defineConfig({
     sidebar: [
         {
             text: 'Getting Started',
-            link: '/docs',
+            link: '/getting-started',
         },
         {
             text: "Guides",
