@@ -13,22 +13,22 @@ const nextConfig: NextConfig = {
                 return [
                     {
                         source: '/docs',
-                        destination: 'https://solana-attestation-site-docs-dev.vercel.app/docs',
+                        destination: 'https://solana-attestation-site-docs-dev.vercel.app',
                     },
                     {
                         source: '/docs/:path*',
-                        destination: 'https://solana-attestation-site-docs-dev.vercel.app/docs/:path*',
+                        destination: 'https://solana-attestation-site-docs-dev.vercel.app/:path*',
                     },
                 ]
             case 'production':
                 return [
                     {
                         source: '/docs',
-                        destination: 'https://solana-attestation-site-docs.vercel.app/docs',
+                        destination: 'https://solana-attestation-site-docs.vercel.app',
                     },
                     {
                         source: '/docs/:path*',
-                        destination: 'https://solana-attestation-site-docs.vercel.app/docs/:path*',
+                        destination: 'https://solana-attestation-site-docs.vercel.app/:path*',
                     },
                     {
                         source: '/docs/:path*',
@@ -39,11 +39,11 @@ const nextConfig: NextConfig = {
                 return [
                     {
                         source: '/docs',
-                        destination: 'http://localhost:5173/docs',
+                        destination: 'http://localhost:5173',
                     },
                     {
                         source: '/docs/:path*',
-                        destination: 'http://localhost:5173/docs/:path*',
+                        destination: 'http://localhost:5173/:path*',
                     },
                     {
                         source: '/docs/:path*',
