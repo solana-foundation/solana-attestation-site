@@ -8,41 +8,37 @@ const nextConfig: NextConfig = {
     },
 
     async rewrites() {
-        switch (process.env.ENVIRONMENT) {
-            case 'development':
-                return [
-                    {
-                        source: '/docs',
-                        destination: 'https://solana-attestation-site-docs-dev.vercel.app',
-                    },
-                    {
-                        source: '/docs/:path*',
-                        destination: 'https://solana-attestation-site-docs-dev.vercel.app/:path*',
-                    },
-                ]
-            case 'production':
-                return [
-                    {
-                        source: '/docs',
-                        destination: 'https://solana-attestation-site-docs.vercel.app',
-                    },
-                    {
-                        source: '/docs/:path*',
-                        destination: 'https://solana-attestation-site-docs.vercel.app/:path*',
-                    },
-                ]
-            default:
-                return [
-                    {
-                        source: '/docs',
-                        destination: 'http://localhost:5173',
-                    },
-                    {
-                        source: '/docs/:path*',
-                        destination: 'http://localhost:5173/:path*',
-                    },
-                ]
-        }
+        const docsBaseUrl = process.env.ENVIRONMENT === 'production'
+            ? 'https://solana-attestation-site-docs.vercel.app'
+            : process.env.ENVIRONMENT === 'development'
+                ? 'https://solana-attestation-site-docs-dev.vercel.app'
+                : 'http://localhost:5173'
+
+        return [
+            // Main docs route
+            {
+                source: '/docs',
+                destination: docsBaseUrl,
+            },
+            // All docs paths including nested routes
+            {
+                source: '/docs/:path*',
+                destination: `${docsBaseUrl}/:path*`,
+            },
+            // Assets and static files
+            {
+                source: '/docs/_assets/:path*',
+                destination: `${docsBaseUrl}/_assets/:path*`,
+            },
+            {
+                source: '/docs/_next/:path*',
+                destination: `${docsBaseUrl}/_next/:path*`,
+            },
+            {
+                source: '/docs/static/:path*',
+                destination: `${docsBaseUrl}/static/:path*`,
+            }
+        ]
     },
 }
 
