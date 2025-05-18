@@ -35,12 +35,12 @@ export const resolveLink = (
         case 'home':
             return '/'
         case 'guide-list':
-            return '/guide'
+            return '/guides'
         case 'guide':
-            return link.guide?.slug ? `/guide/${link.guide.slug}` : undefined
+            return link.guide?.slug ? `/guides/${link.guide.slug}` : undefined
         case 'use-case-list':
-            return '/use-case'
+            return '/use-cases'
         case 'use-case':
-            return link.useCase?.slug ? `/guide/${link.useCase.slug}` : undefined
+            return link.useCase?.slug ? `/use-cases/${link.useCase.slug}` : undefined
     }
 }

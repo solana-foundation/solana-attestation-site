@@ -22,7 +22,7 @@ export const Guide: NextPage<{ params: Promise<{ slug: string }> }> = async ({ p
             />
             {content && <PageContent content={content} />}
             {related && related.length > 0 && (
-                <PageContentRelated title="Learn with other guides" urlPath="guide" linkTitle="Check all guides" linkHref="/guide" items={related} />
+                <PageContentRelated title="Learn with other guides" urlPath="guides" linkTitle="Check all guides" linkHref="/guides" items={related} />
             )}
         </Container>
     )

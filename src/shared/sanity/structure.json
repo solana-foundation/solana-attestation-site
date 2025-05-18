@@ -1,0 +1,48 @@
+{
+  "id": "root",
+  "title": "Content",
+  "items": [
+    {
+      "type": "listItem",
+      "schemaType": "home",
+      "title": "Home",
+      "icon": "HomeIcon",
+      "child": {
+        "type": "editor",
+        "title": "Home",
+        "schemaType": "home",
+        "documentId": "home"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "documentTypeListItem",
+      "schemaType": "guide",
+      "title": "Guides",
+      "icon": "ListIcon"
+    },
+    {
+      "type": "documentTypeListItem",
+      "schemaType": "use-case",
+      "title": "Use Cases",
+      "icon": "ListIcon"
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "listItem",
+      "schemaType": "settings",
+      "title": "Settings",
+      "icon": "CogIcon",
+      "child": {
+        "type": "editor",
+        "title": "Settings",
+        "schemaType": "settings",
+        "documentId": "settings"
+      }
+    }
+  ]
+} 

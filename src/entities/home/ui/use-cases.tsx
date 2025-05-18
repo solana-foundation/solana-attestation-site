@@ -39,7 +39,7 @@ const UseCasesList: FC<{
                 cover={item.cover ?? '/bg1.png'}
                 title={item.title ?? ''}
                 description={item.description ?? ''}
-                href={`/use-case/${item.slug ?? ''}`}
+                href={`/use-cases/${item.slug ?? ''}`}
             />
         ))}
     </Cards>
