@@ -41,7 +41,7 @@ const GuidesList: FC<{
                 cover={item.cover ?? '/bg1.png'}
                 title={item.title ?? ''}
                 description={item.description ?? ''}
-                href={`/guide/${item.slug ?? ''}`}
+                href={`/guides/${item.slug ?? ''}`}
             />
         ))}
     </List>
