@@ -20,6 +20,10 @@ export const settings = defineType({
             name: 'guides',
             title: 'Guides',
         },
+        {
+            name: 'analytics',
+            title: 'Analytics',
+        },
     ],
     fields: [
         defineField({
@@ -57,6 +61,12 @@ export const settings = defineType({
             type: 'string',
             group: 'guides',
             title: 'Guides Page Description',
+        }),
+        defineField({
+            name: 'gaId',
+            type: 'string',
+            group: 'analytics',
+            title: 'Google Analytics ID',
         }),
     ],
     preview: {

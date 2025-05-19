@@ -80,6 +80,7 @@ export type Settings = {
     useCasesPageDescription?: string
     guidesPageTitle?: string
     guidesPageDescription?: string
+    gaId?: string
 }
 
 export type Home = {
@@ -1887,6 +1888,18 @@ export type TOP_NAVIGATION_QUERYResult = null | {
     }> | null
 }
 
+// Source: ./src/entities/settings/model/google-analytics-query.ts
+// Variable: GOOGLE_ANALYTICS_QUERY
+// Query: *[_id == "settings"][0]{  gaId}
+export type GOOGLE_ANALYTICS_QUERYResult =
+    | {
+          gaId: null
+      }
+    | {
+          gaId: string | null
+      }
+    | null
+
 // Source: ./src/entities/use-case/list/model/use-case-list-query.ts
 // Variable: USE_CASE_LIST_QUERY
 // Query: *[_type == "use-case"] {    _id,    title,    "slug": slug.current,    description,    publishedAt,    "cover": cover.asset -> url} | order(publishedAt desc)
@@ -1946,6 +1959,7 @@ declare module '@sanity/client' {
         '\n*[_type == "use-case"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    "cover": cover.asset -> url\n} | order(publishedAt desc) [0...$limit]\n': LATEST_USE_CASES_QUERYResult
         '\n*[_id == "settings"][0]{\n  bottomNavigation {\n    groups[] {\n      _key,\n      _type,\n      title,\n      items[] {\n        _key,\n        _type,\n        title,\n        newWindow,\n        link {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n}\n      }\n    }\n  }\n}.bottomNavigation.groups\n': BOTTOM_NAVIGATION_QUERYResult
         '\n*[_id == "settings"][0]{\n  topNavigation {\n    aside[0] {\n  _key,\n  _type,\n  title,\n  url {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n},\n  variant,\n  icon,\n  newWindow\n},\n    items[] {\n      _key,\n      _type,\n      title,\n      link {\n    _type,\n    ...select(\n      mode == "external" => {\n        "mode": "external",\n        url\n      },\n      mode == "guide-list" => {\n        "mode": "guide-list",\n      },\n      mode == "guide" => {\n        "mode": "guide",\n        guide -> {\n          _id,\n          _type,\n          title,\n          "slug": slug.current\n        }\n      },\n      mode == "home" => {\n        "mode": "home",\n      },\n      mode == "use-case-list" => {\n        "mode": "use-case-list",\n      },\n      mode == "use-case" => {\n        "mode": "use-case",\n        useCase -> {\n          _id,\n          title,\n          "slug": slug.current\n        }\n      }\n    )\n},\n      newWindow\n    }\n  }\n}.topNavigation\n': TOP_NAVIGATION_QUERYResult
+        '\n*[_id == "settings"][0]{\n  gaId\n}\n': GOOGLE_ANALYTICS_QUERYResult
         '\n*[_type == "use-case"] {\n    _id,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n} | order(publishedAt desc)\n': USE_CASE_LIST_QUERYResult
         '\n*[_type == "use-case" && slug.current == $slug][0] {\n  _id,\n  _type,\n  title,\n  description,\n  publishedAt,\n  content,\n  related[] -> {\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    description,\n    publishedAt,\n    "cover": cover.asset -> url\n\n  }\n}\n': USE_CASE_QUERYResult
         '\n*[_id == "settings"][0]{\n  useCasesPageTitle,\n  useCasesPageDescription\n}\n': USE_CASE_TITLE_QUERYResult
