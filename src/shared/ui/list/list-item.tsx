@@ -20,7 +20,7 @@ export const ListItem: FC<ListItemProps> = ({ cover, date, title, description, h
             'grid gap-4',
             cover ? 'grid-cols-1 md:grid-cols-[1fr_auto]' : 'grid-cols-1',
             'border border-black',
-            'hover:bg-[#E6FFFF] active:bg-[#E6FFFF]/50'
+            'bg-white hover:bg-[#E6FFFF] active:bg-[#E6FFFF]/50'
         )}
     >
         <div className="flex flex-col gap-4">

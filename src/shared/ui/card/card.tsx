@@ -11,7 +11,10 @@ type CardProps = {
 }
 
 export const Card: FC<CardProps> = ({ cover, title, description, href }) => (
-    <Link href={href} className={clsx('p-5', 'grid grid-rows-[auto_auto_1fr] gap-4', 'border border-black', 'hover:bg-[#E6FFFF] active:bg-[#E6FFFF]/50')}>
+    <Link
+        href={href}
+        className={clsx('p-5', 'grid grid-rows-[auto_auto_1fr] gap-4', 'border border-black', 'bg-white hover:bg-[#E6FFFF] active:bg-[#E6FFFF]/50')}
+    >
         <div className="p-4 flex items-center justify-center bg-linear-to-b from-[#FFD4FF] to-[#AAFFFF]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={cover} alt={title} className="max-w-full max-h-50" />
