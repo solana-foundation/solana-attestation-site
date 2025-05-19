@@ -11,6 +11,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: 'Solana Attestation Service',
     description: 'SAS',
+    openGraph: {
+        images: '/og.png',
+    },
 }
 
 const Layout: FC<PropsWithChildren> = ({ children }) => (
