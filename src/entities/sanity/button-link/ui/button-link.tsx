@@ -45,15 +45,23 @@ type ButtonLinkProps = {
         icon: 'copy' | 'documentation' | 'github' | null
         newWindow: boolean | null
     }
+    size?: 'sm' | 'default'
     fill?: boolean
 }
 
-export const ButtonLink: FC<ButtonLinkProps> = ({ content, fill }) => {
+export const ButtonLink: FC<ButtonLinkProps> = ({ content, size, fill }) => {
     const href = resolveLink(content.url)
     if (!content.title || !content.url || !href) return undefined
 
     return (
-        <Button href={href} variant={content.variant || 'secondary'} fill={fill} newWindow={content.newWindow || undefined} icon={resolveIcon(content.icon)}>
+        <Button
+            href={href}
+            variant={content.variant || 'secondary'}
+            size={size}
+            fill={fill}
+            newWindow={content.newWindow || undefined}
+            icon={resolveIcon(content.icon)}
+        >
             {content.title}
         </Button>
     )

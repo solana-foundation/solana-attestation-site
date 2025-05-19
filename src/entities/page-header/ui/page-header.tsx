@@ -14,7 +14,7 @@ export const PageHeader: FC = async () => {
                 href: resolveLink(item.link) || '',
                 newWindow: item.newWindow || false,
             }))}
-            aside={navigation?.aside ? <ButtonLink content={navigation?.aside} /> : undefined}
+            aside={navigation?.aside ? <ButtonLink content={navigation?.aside} size="sm" /> : undefined}
         />
     )
 }
