@@ -33,7 +33,7 @@ export const ListItem: FC<ListItemProps> = ({ cover, date, title, description, h
         {cover && (
             <div className="p-4 hidden md:flex items-center justify-center bg-linear-to-b from-[#FFD4FF] to-[#AAFFFF]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={cover} alt={title} className="max-w-full max-h-36" />
+                <img src={cover} alt={title} className="max-w-full max-h-36 aspect-16/9 object-cover" />
             </div>
         )}
     </Link>

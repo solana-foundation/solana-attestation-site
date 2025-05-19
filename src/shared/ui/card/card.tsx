@@ -17,7 +17,7 @@ export const Card: FC<CardProps> = ({ cover, title, description, href }) => (
     >
         <div className="mb-3 p-4 flex items-center justify-center bg-linear-to-b from-[#FFD4FF] to-[#AAFFFF]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={cover} alt={title} className="max-w-full max-h-50" />
+            <img src={cover} alt={title} className="max-w-full max-h-50 aspect-16/9 object-cover" />
         </div>
         <h3 className="text-sm md:text-base font-bold uppercase tracking-tight">{title}</h3>
         <p className="text-sm md:text-base tracking-tight">{description}</p>
