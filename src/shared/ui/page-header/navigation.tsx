@@ -24,7 +24,9 @@ export const Navigation: FC<NavaigationProps> = ({ children, aside }) => {
                     'z-30'
                 )}
             >
-                <div className="col-span-2 md:col-span-1 flex flex-col gap-8 md:gap-0 md:block overflow-hidden whitespace-nowrap text-ellipsis">{children}</div>
+                <div className="md:pt-1.5 col-span-2 md:col-span-1 flex flex-col gap-8 md:gap-0 md:block overflow-hidden whitespace-nowrap text-ellipsis">
+                    {children}
+                </div>
 
                 {aside && <div className="col-span-2 md:col-span-1 md:max-w-3xs overflow-hidden">{aside}</div>}
             </nav>
