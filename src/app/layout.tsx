@@ -1,11 +1,18 @@
-import { FC, PropsWithChildren } from 'react'
+import { ElementType, FC, Fragment, PropsWithChildren } from 'react'
 import { PageHeader } from '@/entities/page-header'
 import { PageFooter } from '@/entities/page-footer'
 
-export const Layout: FC<PropsWithChildren> = ({ children }) => (
-    <>
-        <PageHeader />
-        {children}
-        <PageFooter />
-    </>
-)
+type LayoutProps = PropsWithChildren<{
+    className?: string
+    as?: ElementType
+}>
+
+export const Layout: FC<LayoutProps> = ({ children, className, as: Container = Fragment }) => {
+    return (
+        <Container className={className}>
+            <PageHeader />
+            {children}
+            <PageFooter />
+        </Container>
+    )
+}
