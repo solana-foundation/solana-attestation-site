@@ -403,6 +403,13 @@
           "type": "string"
         },
         "optional": true
+      },
+      "gaId": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
       }
     }
   },

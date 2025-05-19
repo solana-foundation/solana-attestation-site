@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist_Mono } from 'next/font/google'
 import { FC, PropsWithChildren } from 'react'
+import { GoogleAnalytics } from '@/entities/settings'
 import './globals.css'
 
 const geistMono = Geist_Mono({
@@ -18,7 +19,10 @@ export const metadata: Metadata = {
 
 const Layout: FC<PropsWithChildren> = ({ children }) => (
     <html lang="en">
-        <body className={`${geistMono.variable} antialiased`}>{children}</body>
+        <body className={`${geistMono.variable} antialiased`}>
+            {children}
+            <GoogleAnalytics />
+        </body>
     </html>
 )
 
