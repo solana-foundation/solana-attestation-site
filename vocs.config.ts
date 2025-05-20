@@ -3,6 +3,7 @@ import { defineConfig } from 'vocs'
 export default defineConfig({
     title: 'SAS',
     description: 'Documentation for the Solana Attestation Servie',
+    basePath:  "/docs",
     font: {
         default: {
             google: 'Geist Mono',
@@ -28,7 +29,7 @@ export default defineConfig({
     sidebar: [
         {
             text: 'Getting Started',
-            link: '/docs',
+            link: '/getting-started',
         },
         {
             text: "Guides",
@@ -36,19 +37,19 @@ export default defineConfig({
             items: [
                 {
                     text: "Creating a Credential",
-                    link: "/docs/guides/creating-a-credential",
+                    link: "/guides/creating-a-credential",
                 },
                 {
                     text: "Creating a Schema",
-                    link: "/docs/guides/creating-a-schema",
+                    link: "/guides/creating-a-schema",
                 },
                 {
                     text: "Creating an Attestation",
-                    link: "/docs/guides/creating-an-attestation",
+                    link: "/guides/creating-an-attestation",
                 },
                 {
                     text: "Parsing an Attestation",
-                    link: "/docs/guides/parsing-an-attestation",
+                    link: "/guides/parsing-an-attestation",
                 },
             ],
         }
