@@ -5,4 +5,5 @@ body {
     color: var(--foreground);
     font-family: 'Geist Mono', monospace;
     font-optical-sizing: auto;
+    min-width: 320px;
 }

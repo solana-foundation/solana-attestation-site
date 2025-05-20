@@ -9,7 +9,7 @@ type Content = ExtractElementByType<HOME_QUERYResult, 'steps'>
 export const isHowSasWorksBlock = (value: unknown): value is Content => !!value && typeof value === 'object' && '_type' in value && value._type === 'steps'
 
 export const HowSasWorks: FC<{ content: Content }> = ({ content }) => (
-    <Section content={content}>
+    <Section content={content} className="lg:mb-68">
         <Tree
             items={
                 content?.content?.map(item => ({

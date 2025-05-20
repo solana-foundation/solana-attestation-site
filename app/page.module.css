@@ -1,17 +1,19 @@
 .background {
     background-image: url('/bg1.png'), url('/bg2.png'), url('/bg3.png');
-    background-size: 1000px, 900px, 900px;
+    background-size: 1207px, 900px, 1203px;
     background-position:
-        calc(50% + 250px) -250px,
+        calc(50% + 345px) -305px,
         calc(50% + 650px) 850px,
-        calc(50% - 550px) 1750px;
+        calc(50% - 675px) 1682px;
     background-repeat: no-repeat, no-repeat, no-repeat;
     image-rendering: pixelated;
 }
 
 @media screen and (max-width: 639px) {
     .background {
-        background-size: 700px;
-        background-position: calc(50% - 50px) 200px;
+        background-size: 840px, 600px, 0;
+        background-position:
+            calc(50% + 10px) 60px,
+            calc(50% + 300px) 1200px;
     }
 }
