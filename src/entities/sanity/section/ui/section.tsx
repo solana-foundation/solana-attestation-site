@@ -38,10 +38,11 @@ type SectionProps = PropsWithChildren<{
                 | null
         }
     }
+    className?: string
 }>
 
-export const Section: FC<SectionProps> = ({ children, content }) => (
-    <SectionBase title={content?.title ?? ''} linkTitle={content?.docs?.title ?? undefined} linkHref={resolveLink(content?.docs?.link)}>
+export const Section: FC<SectionProps> = ({ children, content, className }) => (
+    <SectionBase title={content?.title ?? ''} linkTitle={content?.docs?.title ?? undefined} linkHref={resolveLink(content?.docs?.link)} className={className}>
         {children}
     </SectionBase>
 )
