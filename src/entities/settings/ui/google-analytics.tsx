@@ -3,6 +3,6 @@ import { GoogleAnalytics as GoogleAnalyticsBase } from '@next/third-parties/goog
 import { fetchGoogleAnalytics } from '../model/google-analytics-query'
 
 export const GoogleAnalytics: FC = async () => {
-    const { gaId } = await fetchGoogleAnalytics()
-    return gaId ? <GoogleAnalyticsBase gaId={gaId} /> : undefined
+    const ga = await fetchGoogleAnalytics()
+    return ga?.gaId ? <GoogleAnalyticsBase gaId={ga.gaId} /> : undefined
 }

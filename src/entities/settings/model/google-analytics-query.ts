@@ -1,4 +1,4 @@
-import { client, GUIDE_QUERYResult } from '@/shared/sanity'
+import { client, GOOGLE_ANALYTICS_QUERYResult } from '@/shared/sanity'
 import { groq } from 'next-sanity'
 
 const GOOGLE_ANALYTICS_QUERY = groq`
@@ -7,4 +7,4 @@ const GOOGLE_ANALYTICS_QUERY = groq`
 }
 `
 
-export const fetchGoogleAnalytics = () => client.fetch<GUIDE_QUERYResult>(GOOGLE_ANALYTICS_QUERY)
+export const fetchGoogleAnalytics = () => client.fetch<GOOGLE_ANALYTICS_QUERYResult>(GOOGLE_ANALYTICS_QUERY)
