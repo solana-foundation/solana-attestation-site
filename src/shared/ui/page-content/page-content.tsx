@@ -38,17 +38,6 @@ const components: PortableTextComponents = {
                     ]}
                 />
             ) : undefined,
-
-        'image': props => (
-            <PageContentContainer>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src={urlFor(props.value.asset._ref).withOptions({ 'max-w': 648 }).auto('format').url()}
-                    className="mb-3 sm:mb-5 max-w-full rounded"
-                    alt=""
-                />
-            </PageContentContainer>
-        ),
     },
 
     block: ({ children, value: { style } }) => (

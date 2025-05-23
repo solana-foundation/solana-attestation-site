@@ -27,13 +27,5 @@ export const PageContentHeader: FC<PageContentHeaderProps> = ({ title, descripti
                 </div>
             </header>
         </PageContentContainer>
-        <div
-            className={clsx(
-                'mt-3 mb-16 -mx-4 sm:mx-0',
-                'h-54 sm:h-122',
-                'bg-[url(/footer-bg.png)] bg-size-[3540px_auto] bg-[center_top_-1150px] bg-no-repeat',
-                'select-none'
-            )}
-        ></div>
     </>
 )
