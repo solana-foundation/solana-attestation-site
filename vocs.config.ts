@@ -29,19 +29,19 @@ export default defineConfig({
     sidebar: [
         {
             text: "Credentials",
-            link: "/docs/credentials"
+            link: "/credentials"
         },
         {
             text: "Schemas",
-            link: "/docs/schemas"
+            link: "/schemas"
         },
         {
             text: "Attestations",
-            link: "/docs/attestations"
+            link: "/attestations"
         },
         {
             text: "PDA Helpers",
-            link: "/docs/helpers"
+            link: "/helpers"
         },
         {
             text: "Instructions",
@@ -49,39 +49,39 @@ export default defineConfig({
             items: [
                 {
                     text: "Create Credential",
-                    link: "/docs/instructions/create-credential"
+                    link: "/instructions/create-credential"
                 },
                 {
                     text: "Create Schema",
-                    link: "/docs/instructions/create-schema"
+                    link: "/instructions/create-schema"
                 },
                 {
                     text: "Create Attestation",
-                    link: "/docs/instructions/create-attestation"
+                    link: "/instructions/create-attestation"
                 },
                 {
                     text: "Create Tokenized Attestation",
-                    link: "/docs/instructions/create-tokenized-attestation"
+                    link: "/instructions/create-tokenized-attestation"
                 },
                 {
                     text: "Change Authorized Signers",
-                    link: "/docs/instructions/change-authorized-signers"
+                    link: "/instructions/change-authorized-signers"
                 },
                 {
                     text: "Change Schema Description",
-                    link: "/docs/instructions/change-schema-description"
+                    link: "/instructions/change-schema-description"
                 },
                 {
                     text: "Close Attestation",
-                    link: "/docs/instructions/close-attestation"
+                    link: "/instructions/close-attestation"
                 },
                 {
                     text: "Close Tokenized Attestation",
-                    link: "/docs/instructions/close-tokenized-attestation"
+                    link: "/instructions/close-tokenized-attestation"
                 },
                 {
                     text: "Emit Event",
-                    link: "/docs/instructions/emit-event"
+                    link: "/instructions/emit-event"
                 }
             ]
         }
