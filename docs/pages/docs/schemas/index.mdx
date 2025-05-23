@@ -1,0 +1,79 @@
+# Schemas
+
+A schema defines the structure and validation rules for credentials in the Solana Attestation System. Schemas serve as templates that specify what fields a credential should contain and how they should be formatted. Each schema is associated with a credential type and can be versioned to support evolution of the data structure.
+
+## Structure
+
+The Schema struct represents a schema in the Solana Attestation System. Each schema defines a template for credentials that can be created under it.
+
+## Type Definitions
+
+### Schema
+
+```typescript
+export type Schema = {
+    discriminator: number;           // Internal discriminator
+    credential: Address;             // Associated credential address
+    name: ReadonlyUint8Array;       // Schema name
+    description: ReadonlyUint8Array; // Schema description
+    layout: ReadonlyUint8Array;     // Schema layout definition
+    fieldNames: ReadonlyUint8Array; // Names of fields in the schema
+    isPaused: boolean;              // Pause status
+    version: number;                // Schema version
+};
+```
+
+## Methods
+
+### Fetching Schemas
+
+| Method | Description | Parameters | Returns |
+|--------|-------------|------------|---------|
+| `fetchSchema` | Fetches a single schema by its address | `rpc`: RPC context, `address`: Schema's address, `config?`: Fetch config | `Promise<Account<Schema>>` |
+| `fetchMaybeSchema` | Safely fetches a schema, returns null if not found | `rpc`: RPC context, `address`: Schema's address, `config?`: Fetch config | `Promise<MaybeAccount<Schema>>` |
+| `fetchAllSchema` | Fetches multiple schemas by their addresses | `rpc`: RPC context, `addresses`: Array of schema addresses, `config?`: Fetch config | `Promise<Account<Schema>[]>` |
+| `fetchAllMaybeSchema` | Safely fetches multiple schemas, skips not found | `rpc`: RPC context, `addresses`: Array of schema addresses, `config?`: Fetch config | `Promise<MaybeAccount<Schema>[]>` |
+
+### Serialization
+
+| Method | Description | Parameters | Returns |
+|--------|-------------|------------|---------|
+| `getSchemaEncoder` | Gets the encoder for schema data | None | `Encoder<SchemaArgs>` |
+| `getSchemaDecoder` | Gets the decoder for schema data | None | `Decoder<Schema>` |
+| `getSchemaCodec` | Gets the codec for schema data | None | `Codec<SchemaArgs, Schema>` |
+
+## Usage Examples
+
+### Fetching a Single Schema
+
+```typescript
+const schema = await fetchSchema(rpc, schemaAddress);
+console.log('Schema name:', schema.name);
+```
+
+### Fetching Multiple Schemas
+
+```typescript
+const schemas = await fetchAllSchema(rpc, [schema1Address, schema2Address]);
+schemas.forEach(schema => console.log('Schema:', schema.name));
+```
+
+### Safe Fetching
+
+```typescript
+const schema = await fetchMaybeSchema(rpc, schemaAddress);
+if (schema) {
+    console.log('Schema found:', schema.name);
+} else {
+    console.log('Schema not found');
+}
+```
+
+## Important Notes
+
+- The `discriminator` field is used internally and should not be modified
+- The `credential` field links the schema to its associated credential type
+- `isPaused` can be used to temporarily disable schema usage
+- The `version` field allows for schema evolution while maintaining backward compatibility
+- `layout` and `fieldNames` define the structure of credentials using this schema
+- All byte array fields (`name`, `description`, `layout`, `fieldNames`) should be properly encoded/decoded according to your application's needs

@@ -1,0 +1,44 @@
+# Emit Event
+
+Emits an event from the Solana Attestation Service program. This instruction allows the program to emit events that can be listened to by external applications for tracking attestation-related activities.
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `eventAuthority` | `Signer` | The program-derived address used as the event authority |
+| `attestationProgram` | `PublicKey \| Pda` | The Solana Attestation Service program address |
+
+## Returns
+
+Returns a `TransactionBuilder` that can be used to build and send the transaction.
+
+## Example
+
+```typescript
+import { getEmitEventInstruction } from "solana-attestation-service";
+
+const transaction = getEmitEventInstruction({
+    eventAuthority: eventAuthoritySigner,
+    attestationProgram: attestationProgramPublicKey
+});
+
+// Send the transaction
+await transaction.sendAndConfirm();
+```
+
+## Important Notes
+
+- The event authority must be a signer of the transaction
+- The event authority is typically a program-derived address (PDA)
+- This instruction is used internally by the program to emit events
+- Events can be used to track:
+  - Attestation creation
+  - Attestation updates
+  - Attestation closures
+  - Schema changes
+  - Credential modifications
+- External applications can listen to these events to maintain their own state
+- The attestation program address must be the correct program address
+- This instruction is typically called as part of other instructions that need to emit events
+

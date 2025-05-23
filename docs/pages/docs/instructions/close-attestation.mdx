@@ -1,0 +1,52 @@
+# Close Attestation
+
+Closes an attestation account, permanently removing it from the blockchain. This instruction allows authorized signers to remove attestations that are no longer needed or have expired.
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `payer` | `Signer` | The account that will pay for the transaction |
+| `authority` | `Signer` | The authorized signer of the credential |
+| `credential` | `PublicKey \| Pda` | The credential account associated with the attestation |
+| `attestation` | `PublicKey \| Pda` | The attestation account to close |
+| `eventAuthority` | `PublicKey \| Pda` | The event authority account for emitting events |
+| `systemProgram` | `PublicKey \| Pda` | The System Program account (defaults to '11111111111111111111111111111111') |
+| `attestationProgram` | `PublicKey \| Pda` | The Attestation Program account |
+
+## Returns
+
+Returns a `TransactionBuilder` that can be used to build and send the transaction.
+
+## Example
+
+```typescript
+import { getCloseAttestationInstruction } from "solana-attestation-service";
+
+const transaction = getCloseAttestationInstruction({
+    payer: payerSigner,
+    authority: authoritySigner,
+    credential: credentialPublicKey,
+    attestation: attestationPublicKey,
+    eventAuthority: eventAuthorityPublicKey,
+    systemProgram: systemProgramPublicKey,
+    attestationProgram: attestationProgramPublicKey
+});
+
+// Send the transaction
+await transaction.sendAndConfirm();
+```
+
+## Important Notes
+
+- Only authorized signers of the credential can close attestations
+- The authority must be a signer of the transaction
+- The payer must be a signer of the transaction
+- The attestation account must be writable
+- The credential and event authority accounts must be readable
+- This operation requires the System Program for rent exemption calculations
+- Closing an attestation is permanent and cannot be undone
+- The attestation's data will be permanently removed from the blockchain
+- Any associated tokens or resources should be handled before closing the attestation
+- The event authority is used to emit events about the attestation closure
+

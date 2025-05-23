@@ -2,7 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
     title: 'SAS',
-    description: 'Documentation for the Solana Attestation Servie',
+    description: 'Documentation for the Solana Attestation Service',
     basePath:  "/docs",
     font: {
         default: {
@@ -28,30 +28,58 @@ export default defineConfig({
       ],
     sidebar: [
         {
-            text: 'Getting Started',
-            link: '/getting-started',
+            text: "Credentials",
+            link: "/docs/credentials"
         },
         {
-            text: "Guides",
+            text: "Schemas",
+            link: "/docs/schemas"
+        },
+        {
+            text: "Attestations",
+            link: "/docs/attestations"
+        },
+        {
+            text: "Instructions",
             collapsed: false,
             items: [
                 {
-                    text: "Creating a Credential",
-                    link: "/guides/creating-a-credential",
+                    text: "Create Credential",
+                    link: "/docs/instructions/create-credential"
                 },
                 {
-                    text: "Creating a Schema",
-                    link: "/guides/creating-a-schema",
+                    text: "Create Schema",
+                    link: "/docs/instructions/create-schema"
                 },
                 {
-                    text: "Creating an Attestation",
-                    link: "/guides/creating-an-attestation",
+                    text: "Create Attestation",
+                    link: "/docs/instructions/create-attestation"
                 },
                 {
-                    text: "Parsing an Attestation",
-                    link: "/guides/parsing-an-attestation",
+                    text: "Create Tokenized Attestation",
+                    link: "/docs/instructions/create-tokenized-attestation"
                 },
-            ],
+                {
+                    text: "Change Authorized Signers",
+                    link: "/docs/instructions/change-authorized-signers"
+                },
+                {
+                    text: "Change Schema Description",
+                    link: "/docs/instructions/change-schema-description"
+                },
+                {
+                    text: "Close Attestation",
+                    link: "/docs/instructions/close-attestation"
+                },
+                {
+                    text: "Close Tokenized Attestation",
+                    link: "/docs/instructions/close-tokenized-attestation"
+                },
+                {
+                    text: "Emit Event",
+                    link: "/docs/instructions/emit-event"
+                }
+            ]
         }
     ],
 })

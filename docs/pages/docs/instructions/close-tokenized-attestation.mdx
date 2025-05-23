@@ -1,0 +1,67 @@
+# Close Tokenized Attestation
+
+Closes a tokenized attestation account and its associated token accounts, permanently removing them from the blockchain. This instruction allows authorized signers to remove tokenized attestations that are no longer needed or have expired.
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `payer` | `Signer` | The account that will pay for the transaction |
+| `authority` | `Signer` | The authorized signer of the credential |
+| `credential` | `PublicKey \| Pda` | The credential account associated with the attestation |
+| `attestation` | `PublicKey \| Pda` | The attestation account to close |
+| `eventAuthority` | `PublicKey \| Pda` | The event authority account for emitting events |
+| `systemProgram` | `PublicKey \| Pda` | The System Program account (defaults to '11111111111111111111111111111111') |
+| `attestationProgram` | `PublicKey \| Pda` | The Attestation Program account |
+| `attestationMint` | `PublicKey \| Pda` | The mint account for the attestation token |
+| `sasPda` | `PublicKey \| Pda` | The program derived address used as program signer authority |
+| `attestationTokenAccount` | `PublicKey \| Pda` | The associated token account holding the attestation token |
+| `tokenProgram` | `PublicKey \| Pda` | The Token Program account (defaults to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') |
+
+## Returns
+
+Returns a `TransactionBuilder` that can be used to build and send the transaction.
+
+## Example
+
+```typescript
+import { getCloseTokenizedAttestationInstruction } from "solana-attestation-service";
+
+const transaction = getCloseTokenizedAttestationInstruction({
+    payer: payerSigner,
+    authority: authoritySigner,
+    credential: credentialPublicKey,
+    attestation: attestationPublicKey,
+    eventAuthority: eventAuthorityPublicKey,
+    systemProgram: systemProgramPublicKey,
+    attestationProgram: attestationProgramPublicKey,
+    attestationMint: attestationMintPublicKey,
+    sasPda: sasPdaPublicKey,
+    attestationTokenAccount: attestationTokenAccountPublicKey,
+    tokenProgram: tokenProgramPublicKey
+});
+
+// Send the transaction
+await transaction.sendAndConfirm();
+```
+
+## Important Notes
+
+- Only authorized signers of the credential can close tokenized attestations
+- The authority must be a signer of the transaction
+- The payer must be a signer of the transaction
+- The attestation and token accounts must be writable
+- The credential and event authority accounts must be readable
+- This operation requires both the System Program and Token Program
+- Closing a tokenized attestation is permanent and cannot be undone
+- The attestation's data and associated tokens will be permanently removed
+- The token account must be empty (all tokens burned) before closing
+- The event authority is used to emit events about the attestation closure
+- The SAS PDA is used to sign token operations on behalf of the program
+
+## Related
+
+- [Attestations Documentation](../attestations)
+- [Credentials Documentation](../credentials)
+- [System Program Documentation](https://docs.solana.com/developing/runtime-facilities/programs#system-program)
+- [Token Program Documentation](https://spl.solana.com/token) 

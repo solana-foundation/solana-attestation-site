@@ -1,0 +1,54 @@
+# Change Schema Version
+
+Updates a schema to a new version with a modified structure. This instruction allows the schema authority to create a new version of a schema with updated layout and field names while maintaining backward compatibility.
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `payer` | `Signer` | The account that will pay for the transaction |
+| `authority` | `Signer` | The schema authority who can modify the schema version |
+| `credential` | `PublicKey \| Pda` | The credential account associated with the schema |
+| `existingSchema` | `PublicKey \| Pda` | The current schema account |
+| `newSchema` | `PublicKey \| Pda` | The new schema account to be created |
+| `systemProgram` | `PublicKey \| Pda` | The System Program account (defaults to '11111111111111111111111111111111') |
+| `layout` | `ReadonlyUint8Array` | The new layout definition for the schema |
+| `fieldNames` | `string[]` | The new list of field names for the schema |
+
+## Returns
+
+Returns a `TransactionBuilder` that can be used to build and send the transaction.
+
+## Example
+
+```typescript
+import { getChangeSchemaVersionInstruction } from "solana-attestation-service";
+
+const transaction = getChangeSchemaVersionInstruction({
+    payer: payerSigner,
+    authority: authoritySigner,
+    credential: credentialPublicKey,
+    existingSchema: existingSchemaPublicKey,
+    newSchema: newSchemaPublicKey,
+    systemProgram: systemProgramPublicKey,
+    layout: newLayoutBytes,
+    fieldNames: ["field1", "field2", "field3"]
+});
+
+// Send the transaction
+await transaction.sendAndConfirm();
+```
+
+## Important Notes
+
+- Only the schema authority can modify the schema version
+- The authority must be a signer of the transaction
+- The payer must be a signer of the transaction
+- The new schema account must be writable
+- The existing schema and credential accounts must be readable
+- This operation requires the System Program for rent exemption calculations
+- The new schema version should maintain backward compatibility with existing attestations
+- The layout and fieldNames must be properly formatted according to the schema specification
+- Existing attestations using the old schema version remain valid
+- New attestations will use the new schema version
+

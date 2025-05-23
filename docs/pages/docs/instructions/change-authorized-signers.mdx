@@ -1,0 +1,43 @@
+# Change Authorized Signers
+
+Updates the list of authorized signers for a credential. This instruction allows the credential authority to modify who can create attestations under this credential.
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `payer` | `Signer` | The account that will pay for the transaction |
+| `authority` | `Signer` | The credential authority who can modify authorized signers |
+| `credential` | `PublicKey \| Pda` | The credential account to update |
+| `systemProgram` | `PublicKey \| Pda` | The System Program account (defaults to '11111111111111111111111111111111') |
+| `signers` | `Address[]` | The new list of authorized signer addresses |
+
+## Returns
+
+Returns a `TransactionBuilder` that can be used to build and send the transaction.
+
+## Example
+
+```typescript
+import { getChangeAuthorizedSignersInstruction } from "solana-attestation-service";
+
+const transaction = getChangeAuthorizedSignersInstruction({
+    payer: payerSigner,
+    authority: authoritySigner,
+    credential: credentialPublicKey,
+    systemProgram: systemProgramPublicKey,
+    signers: [newSigner1, newSigner2, newSigner3]
+});
+
+// Send the transaction
+await transaction.sendAndConfirm();
+```
+
+## Important Notes
+
+- Only the credential authority can modify the list of authorized signers
+- The authority must be a signer of the transaction
+- The payer must be a signer of the transaction
+- The new list of signers completely replaces the existing list
+- The credential account must be writable
+- This operation requires the System Program for rent exemption calculations

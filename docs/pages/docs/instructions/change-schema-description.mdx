@@ -1,0 +1,48 @@
+# Change Schema Description
+
+Updates the description of a schema. This instruction allows the schema authority to modify the description of an existing schema while maintaining its core structure and validation rules.
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `payer` | `Signer` | The account that will pay for the transaction |
+| `authority` | `Signer` | The schema authority who can modify the description |
+| `credential` | `PublicKey \| Pda` | The credential account associated with the schema |
+| `schema` | `PublicKey \| Pda` | The schema account to update |
+| `systemProgram` | `PublicKey \| Pda` | The System Program account (defaults to '11111111111111111111111111111111') |
+| `description` | `string` | The new description for the schema |
+
+## Returns
+
+Returns a `TransactionBuilder` that can be used to build and send the transaction.
+
+## Example
+
+```typescript
+import { getChangeSchemaDescriptionInstruction } from "solana-attestation-service";
+
+const transaction = getChangeSchemaDescriptionInstruction({
+    payer: payerSigner,
+    authority: authoritySigner,
+    credential: credentialPublicKey,
+    schema: schemaPublicKey,
+    systemProgram: systemProgramPublicKey,
+    description: "Updated schema description with more details"
+});
+
+// Send the transaction
+await transaction.sendAndConfirm();
+```
+
+## Important Notes
+
+- Only the schema authority can modify the schema description
+- The authority must be a signer of the transaction
+- The payer must be a signer of the transaction
+- The schema account must be writable
+- The credential account must be readable
+- This operation requires the System Program for rent exemption calculations
+- The description update does not affect the schema's structure or validation rules
+- Existing attestations using this schema remain valid
+

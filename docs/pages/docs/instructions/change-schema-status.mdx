@@ -1,0 +1,47 @@
+# Change Schema Status
+
+Updates the pause status of a schema. This instruction allows the schema authority to temporarily pause or unpause a schema, controlling whether new attestations can be created using this schema.
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `authority` | `Signer` | The schema authority who can modify the status |
+| `credential` | `PublicKey \| Pda` | The credential account associated with the schema |
+| `schema` | `PublicKey \| Pda` | The schema account to update |
+| `isPaused` | `boolean` | The new pause status for the schema |
+
+## Returns
+
+Returns a `TransactionBuilder` that can be used to build and send the transaction.
+
+## Example
+
+```typescript
+import { getChangeSchemaStatusInstruction } from "solana-attestation-service";
+
+const transaction = getChangeSchemaStatusInstruction({
+    authority: authoritySigner,
+    credential: credentialPublicKey,
+    schema: schemaPublicKey,
+    isPaused: true // Pause the schema
+});
+
+// Send the transaction
+await transaction.sendAndConfirm();
+```
+
+## Important Notes
+
+- Only the schema authority can modify the schema status
+- The authority must be a signer of the transaction
+- The schema account must be writable
+- The credential account must be readable
+- When a schema is paused:
+  - New attestations cannot be created using this schema
+  - Existing attestations remain valid
+  - The schema can be unpaused at any time
+- When a schema is unpaused:
+  - New attestations can be created using this schema
+  - All functionality is restored
+
