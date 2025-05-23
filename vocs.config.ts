@@ -1,9 +1,8 @@
 import { defineConfig } from 'vocs'
 
 export default defineConfig({
-    title: 'SAS',
+    title: 'Solana Attestation Service',
     description: 'Documentation for the Solana Attestation Service',
-    basePath:  "/docs",
     font: {
         default: {
             google: 'Geist Mono',
@@ -13,8 +12,8 @@ export default defineConfig({
         colorScheme: 'light'
     },
     iconUrl: {
-        light: '/logo.svg',
-        dark: '/logo.svg',
+        light: '/favicon.ico',
+        dark: '/favicon.ico',
       },
       logoUrl: {
         light: '/logo.svg',
