@@ -3,6 +3,7 @@ import { defineConfig } from 'vocs'
 export default defineConfig({
     title: 'Solana Attestation Service',
     description: 'Documentation for the Solana Attestation Service',
+    basePath: '/docs',
     font: {
         default: {
             google: 'Geist Mono',

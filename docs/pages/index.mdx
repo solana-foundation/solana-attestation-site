@@ -1,15 +1,31 @@
----
-layout: landing
----
+# Getting Started
 
-import { HomePage } from 'vocs/components'
+## Overview
 
-<HomePage.Root>
-  <HomePage.Tagline>Solana Attestation Service</HomePage.Tagline>
-  <HomePage.InstallPackage name="sas-lib" type="init" />
-  <HomePage.Description>A public good program for making onchain attestations with offchain data</HomePage.Description>
-  <HomePage.Buttons>
-    <HomePage.Button href="/docs" variant="accent">Get started</HomePage.Button>
-    <HomePage.Button href="https://github.com/solana-foundation/solana-attestation-service">GitHub</HomePage.Button>
-  </HomePage.Buttons>
-</HomePage.Root>
+A public good program for associating offchain data with onchain accounts
+
+## Quick Start
+
+## Manual Installation
+
+To manually add the SAS library to your project, you can use the following commands:
+
+### Typescript / Javascript
+
+```bash [npm]
+npm i sas-lib 
+```
+
+```bash [yarn]
+yarn add sas-lib 
+```
+
+```bash [pnpm]
+pnpm i sas-lib 
+```
+
+### Rust
+
+```bash
+cargo add solana-attestation-service-client
+```
