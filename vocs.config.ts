@@ -40,6 +40,10 @@ export default defineConfig({
             link: "/docs/attestations"
         },
         {
+            text: "PDA Helpers",
+            link: "/docs/helpers"
+        },
+        {
             text: "Instructions",
             collapsed: false,
             items: [

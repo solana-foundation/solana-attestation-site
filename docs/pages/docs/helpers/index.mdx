@@ -1,0 +1,231 @@
+# PDA Helpers
+
+The Solana Attestation Service uses Program Derived Addresses (PDAs) for various purposes. This guide explains the available helper functions for deriving these addresses.
+
+## Available Seeds
+
+The following seeds are used in the system:
+- `ATTESTATION_SEED`: Used for attestation accounts
+- `CREDENTIAL_SEED`: Used for credential accounts
+- `SCHEMA_SEED`: Used for schema accounts
+- `EVENT_AUTHORITY_SEED`: Used for the event authority
+- `SAS_SEED`: Used for the SAS authority
+- `SCHEMA_MINT_SEED`: Used for schema token mints
+- `ATTESTATION_MINT_SEED`: Used for attestation token mints
+
+## Helper Functions
+
+### Event Authority
+
+```typescript
+const deriveEventAuthorityAddress = async (): Promise<Address<string>>
+```
+
+Derives the address of the event authority PDA. This address is used to sign events emitted by the program.
+
+### SAS Authority
+
+```typescript
+const deriveSasAuthorityAddress = async (): Promise<Address<string>>
+```
+
+Derives the address of the SAS authority PDA. This address is used for program signing authority.
+
+### Credential PDA
+
+```typescript
+const deriveCredentialPda = async ({
+    authority,
+    name
+}: {
+    authority: Address;
+    name: string;
+}): Promise<readonly [Address<string>, number]>
+```
+
+Derives the PDA for a credential account.
+
+**Parameters:**
+- `authority`: The address that controls the credential account
+- `name`: A name for the credential (only first 32 bytes used)
+
+**Returns:**
+- Tuple containing the PDA address and bump seed
+
+**Example:**
+```typescript
+const [credentialPda, bump] = await deriveCredentialPda({
+    authority: authorityPublicKey,
+    name: "My Credential"
+});
+```
+
+### Schema PDA
+
+```typescript
+const deriveSchemaPda = async ({
+    credential,
+    name,
+    version
+}: {
+    credential: Address;
+    name: string;
+    version: number;
+}): Promise<readonly [Address<string>, number]>
+```
+
+Derives the PDA for a schema account.
+
+**Parameters:**
+- `credential`: The credential that the schema is associated with
+- `name`: A name for the schema (only first 32 bytes used)
+- `version`: The version number (0-255) of the schema
+
+**Returns:**
+- Tuple containing the PDA address and bump seed
+
+**Example:**
+```typescript
+const [schemaPda, bump] = await deriveSchemaPda({
+    credential: credentialPublicKey,
+    name: "Identity Schema",
+    version: 1
+});
+```
+
+### Attestation PDA
+
+```typescript
+const deriveAttestationPda = async ({
+    credential,
+    schema,
+    nonce
+}: {
+    credential: Address;
+    schema: Address;
+    nonce: Address;
+}): Promise<readonly [Address<string>, number]>
+```
+
+Derives the PDA for an attestation account.
+
+**Parameters:**
+- `credential`: The credential that controls the attestation
+- `schema`: The schema that the attestation adheres to
+- `nonce`: Either the wallet address the attestation is associated with or a random address to prevent PDA collision
+
+**Returns:**
+- Tuple containing the PDA address and bump seed
+
+**Example:**
+```typescript
+const [attestationPda, bump] = await deriveAttestationPda({
+    credential: credentialPublicKey,
+    schema: schemaPublicKey,
+    nonce: walletPublicKey
+});
+```
+
+### Schema Mint PDA
+
+```typescript
+const deriveSchemaMintPda = async ({
+    schema
+}: {
+    schema: Address;
+}): Promise<readonly [Address<string>, number]>
+```
+
+Derives the PDA for a schema token mint.
+
+**Parameters:**
+- `schema`: The schema that the token belongs to
+
+**Returns:**
+- Tuple containing the PDA address and bump seed
+
+**Example:**
+```typescript
+const [schemaMintPda, bump] = await deriveSchemaMintPda({
+    schema: schemaPublicKey
+});
+```
+
+### Attestation Mint PDA
+
+```typescript
+const deriveAttestationMintPda = async ({
+    attestation
+}: {
+    attestation: Address;
+}): Promise<readonly [Address<string>, number]>
+```
+
+Derives the PDA for an attestation token mint.
+
+**Parameters:**
+- `attestation`: The attestation that the token belongs to
+
+**Returns:**
+- Tuple containing the PDA address and bump seed
+
+**Example:**
+```typescript
+const [attestationMintPda, bump] = await deriveAttestationMintPda({
+    attestation: attestationPublicKey
+});
+```
+
+## Important Notes
+
+1. **Name Length**: When using names in PDAs, only the first 32 bytes are used due to seed size limits.
+
+2. **Version Numbers**: Schema versions are limited to 0-255.
+
+3. **Nonce Usage**: For attestation PDAs, the nonce can be either:
+   - The wallet address the attestation is associated with
+   - A randomly generated address to prevent PDA collision
+
+4. **Bump Seeds**: All PDA derivation functions return both the address and the bump seed. The bump seed is used to ensure the derived address is off the ed25519 curve.
+
+## Common Patterns
+
+### Creating a New Credential and Schema
+
+```typescript
+// Derive credential PDA
+const [credentialPda, credentialBump] = await deriveCredentialPda({
+    authority: authorityPublicKey,
+    name: "My Organization"
+});
+
+// Derive schema PDA
+const [schemaPda, schemaBump] = await deriveSchemaPda({
+    credential: credentialPda,
+    name: "Identity Verification",
+    version: 1
+});
+```
+
+### Creating a Tokenized Attestation
+
+```typescript
+// Derive attestation PDA
+const [attestationPda, attestationBump] = await deriveAttestationPda({
+    credential: credentialPublicKey,
+    schema: schemaPublicKey,
+    nonce: walletPublicKey
+});
+
+// Derive attestation mint PDA
+const [attestationMintPda, mintBump] = await deriveAttestationMintPda({
+    attestation: attestationPda
+});
+```
+
+## Related Documentation
+
+- [Credentials Documentation](./credentials)
+- [Schemas Documentation](./schemas)
+- [Attestations Documentation](./attestations)
+- [Program Derived Addresses Documentation](https://docs.solana.com/developing/programming-model/calling-between-programs#program-derived-addresses) 
