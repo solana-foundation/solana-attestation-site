@@ -1,7 +1,6 @@
 import { formatDateLong, formatDateShort } from '@/shared/utils/format-date'
 import { FC } from 'react'
 import { PageContentContainer } from './page-content-container'
-import clsx from 'clsx'
 
 type PageContentHeaderProps = {
     title: string
