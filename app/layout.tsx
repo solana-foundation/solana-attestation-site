@@ -1,12 +1,27 @@
 import type { Metadata } from 'next'
-import { Geist_Mono } from 'next/font/google'
+import localFont from 'next/font/local'
 import { FC, PropsWithChildren } from 'react'
 import { GoogleAnalytics } from '@/entities/settings'
 import './globals.css'
 
-const geistMono = Geist_Mono({
-    variable: '--font-geist-mono',
-    subsets: ['latin'],
+const siteFont = localFont({
+    src: [
+        {
+            path: "../public/BerkeleyMono-Regular.otf",
+            style: "normal",
+            weight: "400"
+        },
+        {
+            path: "../public/BerkeleyMono-Bold.otf",
+            style: "bold",
+            weight: "700"
+        },
+        {
+            path: "../public/BerkeleyMono-Oblique.otf",
+            style: "italic",
+            weight: "400"
+        },
+    ]
 })
 
 export const metadata: Metadata = {
@@ -19,7 +34,7 @@ export const metadata: Metadata = {
 
 const Layout: FC<PropsWithChildren> = ({ children }) => (
     <html lang="en">
-        <body className={`${geistMono.variable} antialiased`}>
+        <body className={`${siteFont.className} antialiased`}>
             {children}
             <GoogleAnalytics />
         </body>
