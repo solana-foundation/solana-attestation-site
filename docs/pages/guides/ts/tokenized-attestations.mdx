@@ -1,0 +1,754 @@
+---
+title: How to Create Tokenized Credentials using Solana Attestation Service
+description: This implementation guide teaches you the basics of the Solana Attestation Service and how to build with it using TypeScript.
+date: 2025-06-27
+---
+
+# How to Create Tokenized Credentials using Solana Attestation Service (TypeScript)
+
+## What are Tokenized Credentials?
+
+In our [previous guide](/guides/ts/how-to-create-digital-credentials), we explored the basics of the Solana Attestation Service (SAS) and learned how to create credentials, schemas, and attestations. Now we'll take this a step further by creating **tokenized credentials** - attestations that are represented as SPL tokens using Solana's Token-2022 program.
+
+Tokenized credentials offer several advantages over standard attestations:
+
+* **Wallet Integration** - Seamless display in existing Solana wallets, making credentials more visible to users
+* **Standardized Interface** - Leverage existing token infrastructure and tooling (e.g., [DAS API](https://developers.metaplex.com/das-api))
+
+This guide will walk you through creating, verifying, and closing tokenized attestations.
+
+## Prerequisites
+
+Before starting this tutorial, ensure you have:
+
+* Basic understanding of Solana Attestation Service ([Guide: How to Build Digital Credentials using Solana Attestation Service](/guides/ts/how-to-create-digital-credentials))
+* Basic understanding of [Token 2022](https://spl.solana.com/token-2022)
+* **Node.js** (v22 or later)  
+* **Solana CLI** v 2.2.x or greater  
+* **TypeScript** experience
+* **Understanding** of Token-2022 program basics
+
+## Understanding Tokenized Attestations
+
+The token attestation program has two instructions that can create a token attestation: 
+1. [`create_attestation`](https://github.com/solana-foundation/solana-attestation-service/blob/master/program/src/processor/create_attestation.rs) and
+2. [`create_tokenized_attestation`](https://github.com/solana-foundation/solana-attestation-service/blob/master/program/src/processor/create_tokenized_attestation.rs)
+
+The `create_tokenized_attestation` performs all the [same actions](https://github.com/solana-foundation/solana-attestation-service/blob/e2f41faf7262c2bc3ac4b0160fbbc8c5bec71869/program/src/processor/create_tokenized_attestation.rs#L47-L52) as the `create_attestation` instruction and then also mints a representative soulbound NFT to the user. The NFT is a Token 2022 SPL token that leverage several Token Extensions (if you're new to Token 2022, check out our [Token Extension Guide](https://spl.solana.com/token-2022/extensions)):
+
+- **NonTransferable** - Prevents credential trading (soulbound)
+- **TokenMetadata** - Stores credential name, symbol, schema, and attestation account
+- **TokenGroupMember** - Links attestation tokens to a schema group
+- **PermanentDelegate** - Allows SAS authority to manage tokens
+- **MintCloseAuthority** - Enables credential revocation
+
+### When to Use Tokenized Attestations
+
+Choose **tokenized attestations** when you need:
+- **User-visible credentials** in standard wallets
+- **Integration** with existing SPL tooling/ecosystem infrastructure (e.g., [DAS API](https://developers.metaplex.com/das-api))
+- **Rich metadata** and branding (images, names, symbols, etc.)
+
+Tradeoffs:
+- **Higher Priority Fees** - tokenized attestations use additional compute (and therefore transactions will face higher priority fees)
+- **Higher Rent Costs** - tokenized attestations include an attestation account AND a token account, meaning users will need to cover additional costs for storing that data on-chain. The size of the account may vary slightly based on your metadata but are typically 0.005-0.006 SOL
+
+
+## Project Setup
+
+*Prefer to jump straight to the code? Check out our [Examples Repo on GitHub](https://github.com/solana-foundation/solana-attestation-service/tree/master/examples) for the complete code.*
+
+If you completed the [fundamentals guide](/guides/ts/how-to-create-digital-credentials), you can add a new script to that project. Otherwise, create a new project:
+
+```shell
+mkdir tokenized-attestation-demo && cd tokenized-attestation-demo
+```
+
+Initialize and install dependencies:
+
+:::code-group
+ 
+```bash [npm]
+npm init -y
+npm i sas-lib gill
+npm i --save-dev typescript ts-node @types/node
+```
+ 
+```bash [pnpm]
+pnpm init
+pnpm i sas-lib gill
+pnpm i -D typescript ts-node @types/node
+```
+ 
+```bash [yarn]
+yarn init -y
+yarn add sas-lib gill
+yarn add -D typescript ts-node @types/node
+```
+ 
+:::
+
+Create a `tsconfig.json` file:
+
+```json
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "nodenext",
+    "lib": ["es2020"],
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "nodenext"
+  },
+  "rootDir": "./", 
+  "outDir": "./dist",
+  "include": ["./"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+Update your `package.json` scripts:
+
+```json
+"scripts": {
+  "test": "ts-node tokenized-attestation-demo.ts",
+  "build": "tsc"
+}
+```
+
+## Implementation
+
+Let's create our `tokenized-attestation-demo.ts` file and build it step by step:
+
+### Imports and Configuration
+
+Start with the necessary imports.
+
+```ts
+import {
+    getCreateCredentialInstruction,
+    getCreateSchemaInstruction,
+    serializeAttestationData,
+    fetchSchema,
+    fetchAttestation,
+    deserializeAttestationData,
+    deriveAttestationPda,
+    deriveCredentialPda,
+    deriveSchemaPda,
+    getTokenizeSchemaInstruction,
+    deriveSchemaMintPda,
+    deriveSasAuthorityAddress,
+    deriveAttestationMintPda,
+    getCreateTokenizedAttestationInstruction,
+    getCloseTokenizedAttestationInstruction,
+    SOLANA_ATTESTATION_SERVICE_PROGRAM_ADDRESS,
+    deriveEventAuthorityAddress,
+} from "sas-lib";
+import {
+    airdropFactory,
+    generateKeyPairSigner,
+    lamports,
+    Signature,
+    TransactionSigner,
+    IInstruction,
+    Address,
+    Blockhash,
+    getComputeUnitEstimateForTransactionMessageFactory,
+    createSolanaClient,
+    createTransaction,
+    SolanaClient
+} from "gill";
+import {
+    ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    fetchMint,
+    findAssociatedTokenPda,
+    getMintSize,
+    TOKEN_2022_PROGRAM_ADDRESS,
+} from "gill/programs";
+
+const CONFIG = {
+    // Network configuration 
+    CLUSTER_OR_RPC: 'devnet',
+
+    // Basic SAS Information
+    CREDENTIAL_NAME: 'TEST-ORGANIZATION',
+    SCHEMA_NAME: 'THE-BASICS',
+    SCHEMA_LAYOUT: Buffer.from([12, 0, 12]),
+    SCHEMA_FIELDS: ["name", "age", "country"],
+    SCHEMA_VERSION: 1,
+    SCHEMA_DESCRIPTION: 'Basic user information schema for testing',
+    ATTESTATION_DATA: {
+        name: "test-user",
+        age: 100,
+        country: "usa",
+    },
+    ATTESTATION_EXPIRY_DAYS: 365,
+
+    // Token Metadata
+    TOKEN_NAME: "Test Identity",
+    TOKEN_METADATA: "https://example.com/metadata.json",
+    TOKEN_SYMBOL: "TESTID",
+};
+```
+
+Notice there are a few new imports from our previous demo--this time leveraging several resources from the Token & Token 2022 Programs (via `gill/programs`). We have also added a few new metadata configuration fields that we will use for creating our attestation token: `TOKEN_NAME`, `TOKEN_METADATA`, and `TOKEN_SYMBOL`. 
+
+:::note
+
+Our config is set for devnet. If you prefer to use `localnet`, you will need to make sure to fetch the SAS program off mainnet by calling:<br/>
+`solana program dump -u m 22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG path/to/sas.so` <br/>
+and launching it with your test validator:<br/>
+
+`solana-test-validator -r --bpf-program 22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG path/to/sas.so`
+
+:::
+
+### Utility Functions
+
+Next, let's add a couple of utility functions to handle keypair management and transaction confirmations:
+
+
+```ts
+async function setupWallets(client: SolanaClient) {
+    try {
+        const payer = await generateKeyPairSigner(); // or loadKeypairSignerFromFile(path.join(process.env.PAYER));
+        const authorizedSigner1 = await generateKeyPairSigner();
+        const authorizedSigner2 = await generateKeyPairSigner();
+        const issuer = await generateKeyPairSigner();
+        const testUser = await generateKeyPairSigner();
+
+        const airdrop = airdropFactory({ rpc: client.rpc, rpcSubscriptions: client.rpcSubscriptions });
+        const airdropTx: Signature = await airdrop({
+            commitment: 'processed',
+            lamports: lamports(BigInt(1_000_000_000)),
+            recipientAddress: payer.address
+        });
+
+        console.log(`    - Airdrop completed: ${airdropTx}`);
+        return { payer, authorizedSigner1, authorizedSigner2, issuer, testUser };
+    } catch (error) {
+        throw new Error(`Failed to setup wallets: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+async function sendAndConfirmInstructions(
+    client: SolanaClient,
+    payer: TransactionSigner,
+    instructions: IInstruction[],
+    description: string
+): Promise<Signature> {
+    try {
+        const simulationTx = createTransaction({
+            version: "legacy",
+            feePayer: payer,
+            instructions: instructions,
+            latestBlockhash: {
+                blockhash: '11111111111111111111111111111111' as Blockhash,
+                lastValidBlockHeight: 0n,
+            },
+            computeUnitLimit: 1_400_000,
+            computeUnitPrice: 1,
+        });
+
+        const estimateCompute = getComputeUnitEstimateForTransactionMessageFactory({ rpc: client.rpc });
+        const computeUnitLimit = await estimateCompute(simulationTx);
+        const { value: latestBlockhash } = await client.rpc.getLatestBlockhash().send();
+        const tx = createTransaction({
+            version: "legacy",
+            feePayer: payer,
+            instructions: instructions,
+            latestBlockhash,
+            computeUnitLimit,
+            computeUnitPrice: 1, // In production, use dynamic pricing
+        });
+
+        const signature = await client.sendAndConfirmTransaction(tx, {
+            skipPreflight: true,
+            commitment: "processed"
+        });
+        console.log(`    - ${description}: ${signature}`);
+        return signature;
+    } catch (error) {
+        throw new Error(`Failed to ${description.toLowerCase()}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+async function verifyAttestation({
+    client,
+    schemaPda,
+    userAddress
+}: {
+    client: SolanaClient;
+    schemaPda: Address;
+    userAddress: Address;
+}): Promise<boolean> {
+    try {
+        const schema = await fetchSchema(client.rpc, schemaPda);
+        if (schema.data.isPaused) {
+            console.log(`    -  Schema is paused`);
+            return false;
+        }
+        const [attestationPda] = await deriveAttestationPda({
+            credential: schema.data.credential,
+            schema: schemaPda,
+            nonce: userAddress
+        });
+        const attestation = await fetchAttestation(client.rpc, attestationPda);
+        const attestationData = deserializeAttestationData(schema.data, attestation.data.data as Uint8Array);
+        console.log(`    - Attestation data:`, attestationData);
+        const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
+        return currentTimestamp < attestation.data.expiry;
+    } catch (error) {
+        return false;
+    }
+}
+```
+
+These are the same helper funcitons we've used before. Let's add one more that will allow us to also verify a user's token, `verifyTokenAttestation`:
+
+```ts
+async function verifyTokenAttestation({
+    client,
+    schemaPda,
+    userAddress
+}: {
+    client: SolanaClient;
+    schemaPda: Address;
+    userAddress: Address;
+}) {
+    try {
+        const schema = await fetchSchema(client.rpc, schemaPda);
+
+        const [attestationPda] = await deriveAttestationPda({
+            credential: schema.data.credential,
+            schema: schemaPda,
+            nonce: userAddress
+        });
+        const [attestationMint] = await deriveAttestationMintPda({
+            attestation: attestationPda
+        })
+        const mintAccount = await fetchMint(client.rpc, attestationMint);
+        if (!mintAccount) return false;
+        if (mintAccount.data.extensions.__option === 'None') {
+            return false;
+        }
+        const { value: foundExtensions } = mintAccount.data.extensions;
+
+        // Verify member of group
+        const [schemaMint] = await deriveSchemaMintPda({
+            schema: schemaPda
+        });
+        const tokenGroupMember = foundExtensions.find(ext => ext.__kind === 'TokenGroupMember');
+        if (!tokenGroupMember) return false;
+        if (tokenGroupMember.group !== schemaMint) return false;
+
+        // Verify token metadata
+        const tokenMetadata = foundExtensions.find(ext => ext.__kind === 'TokenMetadata');
+        if (!tokenMetadata) return false;
+                
+        // Verify attestation PDA matches
+        const attestationInMetadata = tokenMetadata.additionalMetadata.get('attestation');
+        if (attestationInMetadata !== attestationPda) return false;
+
+        // Verify schema PDA matches  
+        const schemaInMetadata = tokenMetadata.additionalMetadata.get('schema');
+        if (schemaInMetadata !== schemaPda) return false;
+
+        return true;
+
+    } catch {
+        return false;
+    }
+}
+```
+
+Let's walk through what this does:
+- First, we fetch the *Schema* so we can get the credential PDA (which is needed to derive the attestation PDA and attestation token mint)
+- Next, we fetch the attestation Mint
+- Finally, we run a series of checks on the mint account's extensions to ensure: 
+    - the token is a valid member of the schema mint group
+    - the token metadata includes a valid attestation PDA
+    - the token metadata includes a valid schema PDA
+
+:::warning
+_**Important:** attestation tokens do not have expiration data that is included in the standard attestation account, so this type of check should not be used to check active state of an attestation._
+:::
+
+### Steps 1-3: Setup
+
+Now let's implement the frame out the complete tokenized attestation workflow. Add the following `main` function to your file:
+
+```ts
+async function main() {
+    console.log("Starting Solana Attestation Service Demo\n");
+
+    const client: SolanaClient = createSolanaClient({ urlOrMoniker: CONFIG.CLUSTER_OR_RPC });
+
+    // Step 1: Setup wallets and fund payer
+    console.log("1. Setting up wallets and funding payer...");
+    const { payer, authorizedSigner1, authorizedSigner2, issuer, testUser } = await setupWallets(client);
+
+    // Step 2: Create Credential
+    console.log("\n2. Creating Credential...");
+    const [credentialPda] = await deriveCredentialPda({
+        authority: issuer.address,
+        name: CONFIG.CREDENTIAL_NAME
+    });
+
+    const createCredentialInstruction = getCreateCredentialInstruction({
+        payer,
+        credential: credentialPda,
+        authority: issuer,
+        name: CONFIG.CREDENTIAL_NAME,
+        signers: [authorizedSigner1.address, authorizedSigner2.address]
+    });
+
+    await sendAndConfirmInstructions(client, payer, [createCredentialInstruction], 'Credential created');
+    console.log(`    - Credential PDA: ${credentialPda}`);
+
+    // Step 3: Create Schema
+    console.log("\n3.  Creating Schema...");
+    const [schemaPda] = await deriveSchemaPda({
+        credential: credentialPda,
+        name: CONFIG.SCHEMA_NAME,
+        version: CONFIG.SCHEMA_VERSION
+    });
+
+    const createSchemaInstruction = getCreateSchemaInstruction({
+        authority: issuer,
+        payer,
+        name: CONFIG.SCHEMA_NAME,
+        credential: credentialPda,
+        description: CONFIG.SCHEMA_DESCRIPTION,
+        fieldNames: CONFIG.SCHEMA_FIELDS,
+        schema: schemaPda,
+        layout: CONFIG.SCHEMA_LAYOUT
+    });
+
+    await sendAndConfirmInstructions(client, payer, [createSchemaInstruction], 'Schema created');
+    console.log(`    - Schema PDA: ${schemaPda}`);
+
+    // Step 4: Tokenize Schema
+
+
+    // Step 5: Create Tokenized Attestation
+
+
+    // Step 6: Verify Attestations
+
+
+    // Step 7: Verify Attestation Token
+
+
+    // Step 8: Close Tokenized Attestation
+
+}
+
+main()
+    .then(() => console.log("\nSolana Attestation Service demo completed successfully!"))
+    .catch((error) => {
+        console.error("❌ Demo failed:", error);
+        process.exit(1);
+    });
+```
+
+Here, we are outlining the 8 steps we will follow in this tokenized attestation demo. We have included the first three steps, which leverage our [fundamentals guide](/guides/ts/how-to-create-digital-credentials#step-1-setup) - creating the foundational credential and schema infrastructure required for any SAS implementation. 
+
+1. Client and wallet setup - Initialize our Solana client and create the necessary keypairs for testing
+2. Create credential - Establish the issuing authority
+3. Create schema - Define the data structure for our attestations
+4. Tokenize schema - Create a tokenized schema as a Token-2022 "group" mint that we can associate our attestation tokens to
+5. Create tokenized attestation - Issue an attestation as a PDA and an SPL token
+6. Verify attestations - Demonstrate both standard and token-based verification methods
+7. Verify attestation token - Show how to validate tokenized credentials through Token-2022 extensions
+8. Close tokenized attestation - Demonstrate credential revocation by closing the attestation account and burning the NFT
+
+Let's build out the rest of our `main` function.
+
+### Step 4: Tokenize Schema
+
+Before utilizing tokenized attestations, you must first tokenize the schema. This create a "group token" associated with our schema that all attestation tokens will be members of. Under the hood, the SAS program leverages the Token 2022 [Group Pointer Extension](https://spl.solana.com/token-2022/extensions#group-pointer) ([source](https://github.com/solana-foundation/solana-attestation-service/blob/e2f41faf7262c2bc3ac4b0160fbbc8c5bec71869/program/src/processor/tokenize_schema.rs#L91-L97)). Add the following to your `main` function:
+
+```ts
+    // Step 4: Tokenize Schema
+    console.log("\n4. Tokenizing Schema...");
+    const [schemaMint] = await deriveSchemaMintPda({
+        schema: schemaPda
+    });
+    const sasPda = await deriveSasAuthorityAddress();
+    const schemaMintAccountSpace = getMintSize([
+        {
+            __kind: "GroupPointer",
+            authority: sasPda,
+            groupAddress: schemaMint
+        },
+    ]);
+
+    const createTokenizeSchemaInstruction = getTokenizeSchemaInstruction({
+        payer,
+        authority: issuer,
+        credential: credentialPda,
+        schema: schemaPda,
+        mint: schemaMint,
+        sasPda,
+        maxSize: schemaMintAccountSpace,
+        tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+    })
+
+    await sendAndConfirmInstructions(client, payer, [createTokenizeSchemaInstruction], 'Schema tokenized');
+    console.log(`    - Schema Mint: ${schemaMint}`);
+```
+
+Let's break this down:
+- First, we utilize the `deriveSchemaMintPda` to get the Mint PDA associated with our `schemaPda`
+- Next, we use the `deriveSasAuthorityAddress` helper to get the PDA signer that will manage our tokens
+- Since SAS uses Extensions, we need to get the mint account size to tell the program how much space to allocate to the new mint program. We calculate that value by leveraging the `getMintSize` function and passing the `GroupPointer`. For more information on creating token mints, refer to [Guide: Create a Token Mint](https://solana.com/docs/tokens/basics/create-mint).
+- Finally we leverage `getTokenizeSchemaInstruction` to create our instruction and `sendAndConfirmInstructions` helper to send it to the network
+
+### Step 5: Create Tokenized Attestation
+
+Next we will create a transaction instruction that will create the tokenized attestation. Add the following to your code: 
+
+```ts
+    // Step 5: Create Tokenized Attestation
+    console.log("\n5. Creating Tokenized Attestation...");
+    const [attestationPda] = await deriveAttestationPda({
+        credential: credentialPda,
+        schema: schemaPda,
+        nonce: testUser.address
+    });
+    const [attestationMint] = await deriveAttestationMintPda({
+        attestation: attestationPda
+    })
+
+    const schema = await fetchSchema(client.rpc, schemaPda);
+    const expiryTimestamp = Math.floor(Date.now() / 1000) + (CONFIG.ATTESTATION_EXPIRY_DAYS * 24 * 60 * 60);
+    const [recipientTokenAccount] = await findAssociatedTokenPda({
+        mint: attestationMint,
+        owner: testUser.address,
+        tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+    });
+
+    const attestationMintAccountSpace = getMintSize([
+        {
+            __kind: "GroupMemberPointer",
+            authority: sasPda,
+            memberAddress: attestationMint,
+        },
+        { __kind: "NonTransferable" },
+        {
+            __kind: "MetadataPointer",
+            authority: sasPda,
+            metadataAddress: attestationMint,
+        },
+        { __kind: "PermanentDelegate", delegate: sasPda },
+        { __kind: "MintCloseAuthority", closeAuthority: sasPda },
+        {
+            __kind: "TokenMetadata",
+            updateAuthority: sasPda,
+            mint: attestationMint,
+            name: CONFIG.TOKEN_NAME,
+            symbol: CONFIG.TOKEN_SYMBOL,
+            uri: CONFIG.TOKEN_METADATA,
+            additionalMetadata: new Map([
+                ["attestation", attestationPda],
+                ["schema", schemaPda]
+            ]),
+        },
+        {
+            __kind: "TokenGroupMember",
+            group: schemaMint,
+            mint: attestationMint,
+            memberNumber: 1,
+        },
+    ]);
+
+    const createTokenizedAttestationInstruction = await getCreateTokenizedAttestationInstruction({
+        payer,
+        authority: authorizedSigner1,
+        credential: credentialPda,
+        schema: schemaPda,
+        attestation: attestationPda,
+        schemaMint: schemaMint,
+        attestationMint,
+        sasPda,
+        recipient: testUser.address,
+        nonce: testUser.address,
+        expiry: expiryTimestamp,
+        data: serializeAttestationData(schema.data, CONFIG.ATTESTATION_DATA),
+        name:CONFIG.TOKEN_NAME,
+        uri: CONFIG.TOKEN_METADATA,
+        symbol: CONFIG.TOKEN_SYMBOL,
+        mintAccountSpace: attestationMintAccountSpace,
+        recipientTokenAccount: recipientTokenAccount,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+        tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
+    });
+
+    await sendAndConfirmInstructions(client, payer, [createTokenizedAttestationInstruction], 'Tokenized attestation created');
+    console.log(`    - Attestation PDA: ${attestationPda}`);
+    console.log(`    - Attestation Mint: ${attestationMint}`);
+```
+
+Like before, we will first derive our Attestation PDA using a helper function, `deriveAttestationPda` ([ref](/helpers#attestation-pda))--we must also derive the attestation mint using `deriveAttestationMintPda` ([ref](/helpers#schema-mint-pda)). Note that the parameters include a `nonce` which can be a user's address or some other unique identifier address (e.g. some value stored off-chain).
+
+Prior to calling `getCreateTokenizedAttestationInstruction`, we need to do a couple of things:
+- We must fetch our *Schema* from the chain--we will use `fetchSchema` to get the deserialized schema data which is required to serialize our attestation data. We do so by passing the schema data and our attestation into `serializeAttestationData`.
+- We define an expiration of 1-year from now.
+- We define a `recipientTokenAccount` address (where the token will be minted to) using `findAssociatedTokenPda`
+- We calculate the mint size using `getMintSize`. Creating a tokenized attestation involves several Token-2022 extensions, and we must include each or our instruction will fail:
+    - **GroupMemberPointer** - Links this token to the schema group
+    - **NonTransferable** - Prevents credential trading/transfers (soulbound)
+    - **MetadataPointer** - Points to on-chain metadata
+    - **PermanentDelegate** - Allows SAS authority to manage the token
+    - **MintCloseAuthority** - Enables credential revocation
+    - **TokenMetadata** - Stores human-readable information and references
+    - **TokenGroupMember** - Makes this token a member of the schema group
+
+_Notice that the `authority` in our instruction parameters is `authorizedSigner1`, the authorized signer we defined in Step 2 when we created our credential._
+
+Finally, we send the instruction to the network to create the attestation account and mint our attestation token.
+
+
+### Steps 6-7: Verification
+
+We can test that our attestation account was initiated by calling our `verifyAttestation`--add the following to your `main` function:
+
+```ts
+    // Step 6: Verify Attestations
+    console.log("\n6. Verifying Attestations...");
+
+    const isUserVerified = await verifyAttestation({
+        client,
+        schemaPda,
+        userAddress: testUser.address
+    });
+    console.log(`    - Test User is ${isUserVerified ? 'verified' : 'not verified'}`);
+```
+
+You can also run verification checks against the token mint, however, it is important to note that the tokenized attestation does not include expiary information, so to do a thorough verification you should use logic similar to the `verifyAttestation` function.
+
+For token verification, add the following to Step 7 of our code:
+
+```ts
+    // Step 7: Verify Attestation Token
+    console.log("\n7. Verifying Attestation Token...");
+    const isTokenVerified = await verifyTokenAttestation({ client, schemaPda, userAddress: testUser.address });
+    console.log(`    - Test User's token is ${isTokenVerified ? 'verified' : 'not verified'}`);
+```
+
+
+### Step 8: Close Tokenized Attestation
+
+Finally, let's run a script to close our attestation (and burn the associated NFT). Add Step 8:
+
+```ts
+    // Step 8: Close Tokenized Attestation
+    console.log("\n8. Closing Tokenized Attestations...");
+    const eventAuthority = await deriveEventAuthorityAddress();
+
+    const closeTokenizedAttestationInstruction = getCloseTokenizedAttestationInstruction({
+        payer,
+        authority: authorizedSigner1,
+        credential: credentialPda,
+        attestation: attestationPda,
+        eventAuthority,
+        attestationProgram: SOLANA_ATTESTATION_SERVICE_PROGRAM_ADDRESS,
+        attestationMint,
+        sasPda,
+        attestationTokenAccount: recipientTokenAccount,
+        tokenProgram: TOKEN_2022_PROGRAM_ADDRESS
+    });
+    await sendAndConfirmInstructions(client, payer, [closeTokenizedAttestationInstruction], 'Tokenized Attestation closed');
+```
+
+In order to generate an attesation instruction, we need to get the Event Authority address using `deriveEventAuthorityAddress`. The event authority is used to emit close events in the SAS program. Make sure to call `getCloseTokenizedAttestationInstruction` with an `authorizedSigner` and the proper token program (Token 2022).
+
+When we send this to the network, this will completely remove the token from the recipient's wallet via a [burn and close mint invocation](https://github.com/solana-foundation/solana-attestation-service/blob/e2f41faf7262c2bc3ac4b0160fbbc8c5bec71869/program/src/processor/close_tokenized_attestation.rs#L54-L75).
+
+
+## Run the Demonstration
+
+Execute the script:
+
+:::code-group
+ 
+```bash [npm]
+npm test
+```
+ 
+```bash [pnpm]
+pnpm test
+```
+ 
+```bash [yarn]
+yarn test
+```
+ 
+:::
+
+Expected output:
+
+```
+Starting Solana Attestation Service Demo
+
+1. Setting up wallets and funding payer...
+    - Airdrop completed: 2nzKSmVW4VxSzHeGtavx5b3fmG9qwa8oqkZK8Adp2pdKmSvMu6eNW6evUG6RjURJFFm1wfySzov2WHg8YNTv5Yju
+
+2. Creating Credential...
+    - Credential created: 3PJDtqk3FKxCBYA71gXdZKrRDgei9UNANvqwH3AkT8HMYXbTwBgn37xxoozUZKhupkr9wf3aH9hqgPcJehLAkL4C
+    - Credential PDA: 7mpL3XSdCN7v4mZZXcH3AfFQQKe62CT4a2EVxV66t3QE
+
+3.  Creating Schema...
+    - Schema created: mnoiU8AoxRhgkvGzLEyQzjsARyUp2SkQERHJmi9nziEW1eRADGzSJCdHECXathHxGs1xNF6b5m8E9TUVDWjmmrd
+    - Schema PDA: 9PCmekRX9szD6oK6JWCkvof9NCqgmufjjydPXWgnNC8w
+
+4. Tokenizing Schema...
+    - Schema tokenized: 3xDPohEPsHVE8a47vdFgjuirivg2iv4BWjnjPgTxYYxgSwo3MevSjXGCykpXE9oB3RZsWxGXagznE8uq99L4v1Ry
+    - Schema Mint: 45nkySibE1YpCEon9gw6kPVmRZyVsxjKjEZ3vnQgD617
+
+5. Creating Tokenized Attestation...
+    - Tokenized attestation created: 44vCrasFQqaaMcc5dDdfvoRUnRtDUWTubW6RMZzUn9GBGveVSMGTAmmMqWAgFZ9tFYXjWmNoVditSWqj1167DBdR
+    - Attestation PDA: HK8RKPGrPCaADrfMvkgyUrqYHH6LPCStjYDLR7VbgDYW
+    - Attestation Mint: 7zLCJNqkvuYkiWP5JMhVKCYh1B45SU2oPynbXfpphyc9
+
+6. Verifying Attestations...
+    - Attestation data: { name: 'test-user', age: 100, country: 'usa' }
+    - Test User is verified
+
+7. Verifying Attestation Token...
+    - Test User's token is verified
+
+8. Closing Tokenized Attestations...
+    - Tokenized Attestation closed: 3YSVy7Mfu3qCiSixaNiGzUfaqGJsouSbExEYv6kM3FQD9nAxZ9D3mu1MRxfTpGf98RTBFBv1GwsTZAhcCWjgqLR1
+
+Solana Attestation Service demo completed successfully!
+```
+
+Nice job!
+
+## Wrap Up
+
+Congratulations! You've successfully implemented a complete tokenized credential system using the Solana Attestation Service, including:
+
+- **Tokenize schemas** to create credential groups
+- **Issue tokenized attestations** as SPL tokens
+- **Verify credentials** through multiple methods
+- **Revoke credentials** by closing tokens
+
+Tokenized credentials open up new possibilities for credential management, user experience, and integration with the broader Solana ecosystem. Time to start building!
+
+## Additional Resources
+
+- Need help? Ask questions the [Solana Stack Exchange](https://solana.stackexchange.com/) with a `SAS` tag.
+- [Guide: How to Build Digital Credentials using Solana Attestation Service (TypeScript)](/guides/ts/how-to-create-digital-credentials)
+- [**SAS Source Code**](https://github.com/solana-foundation/solana-attestation-service)  
+- [**Complete Tokenized Example**](https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/tokenized-typescript)  
+- [**Token-2022 Documentation**](https://spl.solana.com/token-2022)  
+- [**Solana Developer Resources**](https://solana.com/developers)

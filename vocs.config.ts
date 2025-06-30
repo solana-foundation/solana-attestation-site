@@ -84,6 +84,25 @@ export default defineConfig({
                     link: "/instructions/emit-event"
                 }
             ]
+        },
+        {
+            text: "Implementation Guides (TS)",
+            collapsed: false,
+            items: [
+                {
+                    text: "Attestation Fundamentals",
+                    link: "/guides/ts/how-to-create-digital-credentials"
+                },
+                {
+                    text: "Tokenized Attestations",
+                    link: "/guides/ts/tokenized-attestations"
+                },
+
+            ]
+        },
+        {
+            text: "Code Examples",
+            link: "https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/"
         }
     ],
 })
