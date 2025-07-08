@@ -101,6 +101,20 @@ export default defineConfig({
             ]
         },
         {
+            text: "Implementation Guides (Rust)",
+            collapsed: false,
+            items: [
+                {
+                    text: "Attestation Fundamentals",
+                    link: "/guides/rust/how-to-create-digital-credentials"
+                },
+                {
+                    text: "Tokenized Attestations",
+                    link: "/guides/rust/tokenized-attestations"
+                }
+            ]
+        },
+        {
             text: "Code Examples",
             link: "https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/"
         }

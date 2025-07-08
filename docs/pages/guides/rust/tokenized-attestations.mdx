@@ -1,0 +1,663 @@
+---
+title: How to Create Tokenized Credentials using Solana Attestation Service
+description: This implementation guide teaches you the basics of the Solana Attestation Service and how to build with it using Rust.
+date: 2025-7-9
+---
+# How to Build Tokenized Digital Credentials using Solana Attestation Service (Rust)
+
+## Introduction
+
+This guide builds upon our [Rust SAS Flow Guide](/guides/rust/how-to-create-digital-credentials) where you learned the fundamentals of creating credentials, schemas, and attestations using the Solana Attestation Service. In this Part 2, we'll extend your existing project to create **tokenized attestations** - NFTs that represent your digital credentials.
+
+Tokenized credentials offer several advantages over standard attestations:
+
+* **Wallet Integration** - Seamless display in existing Solana wallets, making credentials more visible to users
+* **Standardized Interface** - Leverage existing token infrastructure and tooling (e.g., [DAS API](https://developers.metaplex.com/das-api))
+
+This guide will walk you through creating, verifying, and closing tokenized attestations using the `solana-attestation-service-client` crate.
+
+## Prerequisites
+
+Before starting this tutorial, ensure you have:
+
+* Completed [Part 1](/guides/rust/how-to-create-digital-credentials) - This guide builds directly on that foundation (or you can fork our existing code from [GitHub](https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/rust/attestation-flow-guide/standard-demo))
+* Basic understanding of [Token 2022](https://spl.solana.com/token-2022)
+* [**Rust**](https://rustup.rs/) (latest stable version)
+* [**Solana CLI**](https://solana.com/docs/intro/installation) v 2.2.x or greater  
+
+## Understanding Tokenized Attestations
+
+Tokenized attestations leverage SPL Token 2022's advanced features to create secure, non-transferable NFTs that represent credentials. Here's how the system works:
+
+### Token Architecture
+
+* **Schema Tokens** - Each schema becomes a "collection" or group token that represents the credential type
+* **Attestation Tokens** - Individual attestations become group member tokens within their schema's collection
+* **Token Extensions** - The SAS program utilizes several SPL Token 2022 extensions: 
+    * **Non-Transferable** - Tokens cannot be moved between wallets, ensuring credential integrity
+    * **Metadata** - Tokens include names, symbols, URIs, and links back to attestation data
+    * **Token Groups** - Schemas serve as group tokens, attestations as members
+    * **Permanent Delegate** - SAS program maintains control over tokens
+    * **Mint Close Authority** - SAS program maintains ability to burn the token mint
+
+## Project Extension
+
+This project builds on the *SasDemo* struct from the [SAS Rust Workflow Guide](/guides/rust/how-to-create-digital-credentials). You will need to start with that existing code or fork it from the [GitHub Examples Repository](https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/rust/attestation-flow-guide/standard-demo).
+
+### Update Dependencies
+
+First, add the SPL Token 2022 dependencies to your existing `Cargo.toml`:
+
+```toml
+[package]
+name = "sas-demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Solana core dependencies (existing)
+solana-sdk = "2.3.1"
+solana-client = "2.3.2"
+solana-program = "2.3.0"
+solana-system-interface = "1.0.0"
+
+# SPL Token Program dependencies (NEW)
+spl-token-2022 = "9.0.0"
+spl-token-metadata-interface = "0.7.0"
+spl-associated-token-account = "7.0.0"
+spl-pod = "0.5.1"
+spl-token-group-interface = "0.6.0"
+
+# Solana Attestation Service client (existing)
+solana-attestation-service-client = "1.0.9"
+
+# Async runtime (existing)
+tokio = { version = "1.0", features = ["full"] }
+
+# Serialization (existing)
+borsh = "0.10"
+
+# Error handling (existing)
+anyhow = "1.0"
+```
+
+### Add New Imports
+
+Add these imports to the top of your `src/main.rs` file, after your existing imports:
+
+```rust
+use spl_pod::optional_keys::OptionalNonZeroPubkey;
+use spl_token_2022::{
+    extension::{BaseStateWithExtensions, ExtensionType, StateWithExtensions},
+    state::Mint,
+    ID as TOKEN_22_PROGRAM_ID,
+};
+use spl_token_metadata_interface::state::TokenMetadata;
+use spl_associated_token_account::get_associated_token_address_with_program_id;
+use spl_token_group_interface::state::TokenGroupMember;
+```
+
+And add these additional instruction builders to your `solana_attestation_service_client` imports:
+
+```rust
+use solana_attestation_service_client::{
+    accounts::Attestation,
+    instructions::{
+        ChangeAuthorizedSignersBuilder, CloseAttestationBuilder,
+        CreateAttestationBuilder, CreateCredentialBuilder, CreateSchemaBuilder,
+        // Add these three 👇 // [!code focus] 
+        CreateTokenizedAttestationBuilder, TokenizeSchemaBuilder, CloseTokenizedAttestationBuilder // [!code focus]  // [!code ++]
+    },
+    programs::SOLANA_ATTESTATION_SERVICE_ID,
+};
+```
+
+### Enhanced Configuration
+
+Let's add a new configuration structure specifically for tokenized attestations. Add this after your existing `Config` struct:
+
+```rust
+struct TokenizedConfig {
+    // Inherit from base Config
+    base: Config,
+
+    // Token metadata
+    token_name: String,
+    token_symbol: String,
+    token_metadata_uri: String,
+}
+
+impl Default for TokenizedConfig {
+    fn default() -> Self {
+        Self {
+            base: Config::default(),
+            token_name: "Test Identity".to_string(),
+            token_symbol: "TESTID".to_string(),
+            token_metadata_uri: "https://example.com/metadata.json".to_string(),
+        }
+    }
+}
+```
+
+This configuration extends our base configuration with token-specific metadata that will be embedded in the NFTs we create.
+
+## Implementation
+
+Now let's extend your existing `SasDemo` implementation with tokenization capabilities.
+
+
+### Additional PDA Derivation Methods
+
+Add these new PDA derivation methods to your `SasDemo` implementation:
+
+```rust
+impl SasDemo {
+    // ... existing methods
+
+    fn derive_schema_mint_pda(&self, schema_pda: &Pubkey) -> (Pubkey, u8) {
+        Pubkey::find_program_address(
+            &[b"schemaMint", &schema_pda.to_bytes()],
+            &SOLANA_ATTESTATION_SERVICE_ID,
+        )
+    }
+
+    fn derive_attestation_mint_pda(&self, attestation_pda: &Pubkey) -> (Pubkey, u8) {
+        Pubkey::find_program_address(
+            &[b"attestationMint", &attestation_pda.to_bytes()],
+            &SOLANA_ATTESTATION_SERVICE_ID,
+        )
+    }
+
+    fn derive_sas_authority_address() -> (Pubkey, u8) {
+        Pubkey::find_program_address(&[b"sas"], &SOLANA_ATTESTATION_SERVICE_ID)
+    }
+    
+    // ... existing methods
+}
+```
+
+These methods derive the PDAs for:
+- **Schema Mint** - The group token representing the schema/credential type
+- **Attestation Mint** - The individual NFT representing each attestation
+- **SAS Authority** - The program's authority account that manages tokens
+
+### Mint Account Size Calculation
+
+Because SPL Token 2022 token mints vary in size based on the extensions enabled, the Token 2022 program requires precise account size calculations when creating new tokens. Add these helper methods to size our schema and attestation token mints:
+
+```rust
+impl SasDemo {
+    // ... previous methods
+
+    fn calculate_schema_mint_size(&self) -> usize {
+        let expected_acc_size =
+            ExtensionType::try_calculate_account_len::<Mint>(&[ExtensionType::GroupPointer])
+                .unwrap();
+        expected_acc_size
+    }
+
+    fn calculate_token_metadata_size(&self, config: &TokenizedConfig) -> Result<usize> {
+        // Create dummy addresses for size calculation
+        let dummy_key = Pubkey::new_unique();
+
+        // Prepare additional metadata (use placeholder keys for calculating size)
+        let additional_metadata = vec![
+            ("attestation".to_string(), dummy_key.to_string()),
+            ("schema".to_string(), dummy_key.to_string()),
+        ];
+
+        // Create TokenMetadata for size calculation
+        let token_metadata = TokenMetadata {
+            update_authority: OptionalNonZeroPubkey::try_from(Some(dummy_key))?,
+            mint: dummy_key,
+            name: config.token_name.clone(),
+            symbol: config.token_symbol.clone(),
+            uri: config.token_metadata_uri.clone(),
+            additional_metadata,
+        };
+
+        // Calculate the TLV (Type-Length-Value) size
+        Ok(token_metadata.tlv_size_of()?)
+    }
+
+    fn calculate_attestation_mint_size(&self, config: &TokenizedConfig) -> usize {
+        let attestation_extensions = vec![
+            ExtensionType::GroupMemberPointer,
+            ExtensionType::NonTransferable,
+            ExtensionType::MetadataPointer,
+            ExtensionType::PermanentDelegate,
+            ExtensionType::MintCloseAuthority,
+            ExtensionType::TokenGroupMember,
+        ];
+        let base_size =
+            ExtensionType::try_calculate_account_len::<Mint>(&attestation_extensions).unwrap();
+        let metadata_size = self.calculate_token_metadata_size(config).unwrap();
+
+        base_size + metadata_size
+    }
+}
+```
+
+These methods calculate the exact account sizes needed for:
+- **Schema tokens** with group pointer extensions
+- **Attestation tokens** with the following extensions: group member pointer, non-transferrable, metadata pointer, permanent delegate, mint close authority, and token group member (note that because the actually metadata is also variable in length, we must calculate that seperately--see below)
+- **Token metadata** that includes attestation and schema references
+
+### Step 4: Schema Tokenization
+
+Now let's implement the method to create a tokenized schema that will represent the group/collection that our attestation tokens are assigned to. Add this method to your `SasDemo` implementation:
+
+```rust
+impl SasDemo {
+    // ... previous methods
+
+    async fn tokenize_schema(
+        &self,
+        credential_pda: &Pubkey,
+        schema_pda: &Pubkey,
+    ) -> Result<Pubkey> {
+        println!("\n4. Tokenizing Schema...");
+
+        let (schema_mint_pda, _bump) = self.derive_schema_mint_pda(schema_pda);
+        let (sas_authority, _bump) = Self::derive_sas_authority_address();
+
+        let instruction = TokenizeSchemaBuilder::new()
+            .payer(self.wallets.payer.pubkey())
+            .authority(self.wallets.issuer.pubkey())
+            .sas_pda(sas_authority)
+            .credential(*credential_pda)
+            .schema(*schema_pda)
+            .mint(schema_mint_pda)
+            .max_size(self.calculate_schema_mint_size() as u64)
+            .instruction();
+
+        self.send_and_confirm_instruction(instruction, &[&self.wallets.issuer], "Schema tokenized")
+            .await?;
+
+        println!("    - Schema Mint: {}", schema_mint_pda);
+        Ok(schema_mint_pda)
+    }
+}
+```
+
+This method follows the same pattern that we used in our previous guide: derive PDAs, assemble an instruction with the SAS Client instruction builders (*note the authority here is the `issuer`*), and then send the instruction to the network. 
+
+
+### Step 5: Tokenized Attestation Creation
+
+Next, let's implement the core functionality for creating tokenized attestations:
+
+```rust
+impl SasDemo {
+    // ... previous methods
+
+    async fn create_tokenized_attestation(
+        &self,
+        credential_pda: &Pubkey,
+        schema_pda: &Pubkey,
+        schema_mint_pda: &Pubkey,
+        config: &TokenizedConfig,
+    ) -> Result<(Pubkey, Pubkey)> {
+        println!("\n5. Creating Tokenized Attestation...");
+
+        let (attestation_pda, _bump) = self.derive_attestation_pda(
+            credential_pda,
+            schema_pda,
+            &self.wallets.test_user.pubkey(),
+        );
+        let (attestation_mint_pda, _bump) = self.derive_attestation_mint_pda(&attestation_pda);
+        let (sas_authority, _bump) = Self::derive_sas_authority_address();
+
+        // Calculate associated token account for recipient
+        let recipient_token_account = get_associated_token_address_with_program_id(
+            &self.wallets.test_user.pubkey(),
+            &attestation_mint_pda,
+            &TOKEN_22_PROGRAM_ID,
+        );
+
+        // Serialize attestation data
+        let attestation_data = TestData {
+            name: "test-user".to_string(),
+            age: 100,
+            country: "usa".to_string(),
+        };
+        let mut serialized_data = Vec::new();
+        attestation_data.serialize(&mut serialized_data)?;
+
+        // Calculate expiry timestamp
+        let current_timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
+        let expiry = current_timestamp + (config.base.attestation_expiry_days * 24 * 60 * 60);
+
+        let instruction = CreateTokenizedAttestationBuilder::new()
+            .payer(self.wallets.payer.pubkey())
+            .authority(self.wallets.authorized_signer1.pubkey())
+            .sas_pda(sas_authority)
+            .credential(*credential_pda)
+            .schema(*schema_pda)
+            .attestation(attestation_pda)
+            .schema_mint(*schema_mint_pda)
+            .attestation_mint(attestation_mint_pda)
+            .recipient(self.wallets.test_user.pubkey())
+            .nonce(self.wallets.test_user.pubkey())
+            .expiry(expiry)
+            .data(serialized_data)
+            .name(config.token_name.clone())
+            .uri(config.token_metadata_uri.clone())
+            .symbol(config.token_symbol.clone())
+            .mint_account_space(self.calculate_attestation_mint_size(config) as u16)
+            .recipient_token_account(recipient_token_account)
+            .instruction();
+
+        self.send_and_confirm_instruction(
+            instruction,
+            &[&self.wallets.authorized_signer1],
+            "Tokenized attestation created",
+        )
+        .await?;
+
+        println!("    - Attestation PDA: {}", attestation_pda);
+        println!("    - Attestation Mint: {}", attestation_mint_pda);
+        Ok((attestation_pda, attestation_mint_pda))
+    }
+}
+```
+
+This method creates both the attestation account and its corresponding Token 2022 NFT. The process involves:
+- Deriving the user's associated token account (where the token will be distributed)
+- Calculating an absolute expiration for the attestation
+- Serializing the attestation data (same as Part 1)
+- Leveraging our `calculate_attestation_mint_size` method to determine the size of the attestation account based on our config
+- Creating the tokenized attestation -- note that under the hood, the SAS program will initialize both a tokenized attestation AND the standard attestation PDA ([source code](https://github.com/solana-foundation/solana-attestation-service/blob/e2f41faf7262c2bc3ac4b0160fbbc8c5bec71869/program/src/processor/create_tokenized_attestation.rs#L47-L52))--we will verify both
+
+The resulting NFT will appear in the user's wallet with the specified name, symbol, and URI.
+
+### Step 6: Token Verification
+
+Let's add a method to verify a user's attestation by finding and examining their attestation NFT:
+
+```rust
+impl SasDemo {
+    // ... previous methods
+
+    async fn verify_token_attestation(
+        &self,
+        schema_pda: &Pubkey,
+        user_address: &Pubkey,
+        credential_pda: &Pubkey,
+    ) -> Result<bool> {
+        let (attestation_pda, _bump) =
+            self.derive_attestation_pda(credential_pda, schema_pda, user_address);
+        let (attestation_mint_pda, _bump) = self.derive_attestation_mint_pda(&attestation_pda);
+        let (schema_mint_pda, _bump) = self.derive_schema_mint_pda(schema_pda);
+
+        match self.rpc_client.get_account(&attestation_mint_pda) {
+            Ok(account) => {
+                // Parse the mint account and check extensions
+                println!("    - Attestation Mint: {}", attestation_mint_pda);
+                let mint_state = StateWithExtensions::<Mint>::unpack(&account.data).unwrap();
+
+                let token_group_member = mint_state.get_extension::<TokenGroupMember>().unwrap();
+                assert_eq!(token_group_member.group, schema_mint_pda);
+
+                let token_metadata = &mint_state
+                    .get_variable_len_extension::<TokenMetadata>()
+                    .unwrap();
+                assert_eq!(token_metadata.additional_metadata[0].0, "attestation");
+                assert_eq!(
+                    token_metadata.additional_metadata[0].1,
+                    attestation_pda.to_string()
+                );
+                assert_eq!(token_metadata.additional_metadata[1].0, "schema");
+                assert_eq!(token_metadata.additional_metadata[1].1, schema_pda.to_string());
+
+                Ok(true)
+            }
+            Err(_) => {
+                println!("    - Attestation mint not found");
+                Ok(false)
+            }
+        }
+    }
+}
+```
+
+This verification method examines the token's extensions by leveraging the `unpack` method and `get_extension`/`get_variable_len_extension` helpers to:
+- Confirm it's a member of the correct schema group
+- Verify the metadata links back to the attestation and schema PDAs
+- Ensure the token structure is valid
+
+:::warning
+_**Important:** attestation tokens **do not** have expiration data that is included in the standard attestation account, so this type of check should not be used to check active state of an attestation._
+:::
+
+### Step 7: Tokenized Attestation Closure
+
+Finally, let's implement the method to close tokenized attestations:
+
+```rust
+impl SasDemo {
+    // ... previous methods
+
+    async fn close_tokenized_attestation(
+        &self,
+        attestation_pda: &Pubkey,
+        attestation_mint_pda: &Pubkey,
+        credential_pda: &Pubkey,
+    ) -> Result<()> {
+        println!("\n8. Closing Tokenized Attestation...");
+
+        let recipient_token_account = get_associated_token_address_with_program_id(
+            &self.wallets.test_user.pubkey(),
+            attestation_mint_pda,
+            &TOKEN_22_PROGRAM_ID,
+        );
+        let (sas_authority, _bump) = Self::derive_sas_authority_address();
+
+        let instruction = CloseTokenizedAttestationBuilder::new()
+            .payer(self.wallets.payer.pubkey())
+            .authority(self.wallets.authorized_signer1.pubkey())
+            .sas_pda(sas_authority)
+            .credential(*credential_pda)
+            .attestation(*attestation_pda)
+            .attestation_program(SOLANA_ATTESTATION_SERVICE_ID)
+            .attestation_mint(*attestation_mint_pda)
+            .attestation_token_account(recipient_token_account)
+            .instruction();
+
+        self.send_and_confirm_instruction(
+            instruction,
+            &[&self.wallets.authorized_signer1],
+            "Tokenized attestation closed",
+        )
+        .await?;
+
+        Ok(())
+    }
+}
+```
+
+This method closes both the attestation PDA and burns the associated NFT, completely revoking the credential. Note that we sign this transaction with one of our Credential's authorized signers. 
+
+### Complete Tokenized Demo
+
+Now let's add the entire flow for the tokenized demo:
+
+```rust
+impl SasDemo {
+    // ... previous methods
+
+    pub async fn run_tokenized_demo(&self) -> Result<()> {
+        println!("Starting Solana Attestation Service Tokenized Demo\n");
+        let config = TokenizedConfig::default();
+
+        // Steps 1-3: Same as regular demo
+        self.fund_payer().await?;
+        let credential_pda = self.create_credential().await?;
+        let schema_pda = self.create_schema(&credential_pda).await?;
+
+        // Step 4: Tokenize Schema
+        let schema_mint_pda = self.tokenize_schema(&credential_pda, &schema_pda).await?;
+
+        // Step 5: Create Tokenized Attestation
+        let (attestation_pda, attestation_mint_pda) = self
+            .create_tokenized_attestation(&credential_pda, &schema_pda, &schema_mint_pda, &config)
+            .await?;
+
+        // Step 6: Verify Attestations (non-tokenized attestation accounts)
+        println!("\n6. Verifying Attestations...");
+        let _test_user_result = self
+            .verify_attestation(
+                &schema_pda,
+                &self.wallets.test_user.pubkey(),
+                &credential_pda,
+                "Test User",
+            )
+            .await;
+        let _random_user_result = self
+            .verify_attestation(
+                &schema_pda,
+                &Keypair::new().pubkey(),
+                &credential_pda,
+                "Random User",
+            )
+            .await;
+
+        // Step 7: Verify Token Attestation
+        println!("\n7. Verifying Token Attestation...");
+        let is_token_verified = self
+            .verify_token_attestation(
+                &schema_pda,
+                &self.wallets.test_user.pubkey(),
+                &credential_pda,
+            )
+            .await?;
+        println!(
+            "    - Test User's token is {}",
+            if is_token_verified {
+                "verified"
+            } else {
+                "not verified"
+            }
+        );
+
+        // Step 8: Close Tokenized Attestation
+        self.close_tokenized_attestation(&attestation_pda, &attestation_mint_pda, &credential_pda)
+            .await?;
+
+        println!("\nSolana Attestation Service tokenized demo completed successfully!");
+        Ok(())
+    }
+}
+```
+
+This demo method follows the same pattern as the original demo but uses tokenization steps and demonstrates both traditional and token-based verification.
+
+### Updated Main Function
+
+Finally, update your main function to support both demo types:
+
+```rust
+#[tokio::main]
+async fn main() -> Result<()> {
+    let demo = SasDemo::new();
+
+    // Get demo type from command line args or default to standard
+    let args: Vec<String> = std::env::args().collect();
+    let demo_type = args.get(1).map(|s| s.as_str()).unwrap_or("standard");
+
+    match demo_type {
+        "tokenized" => demo.run_tokenized_demo().await,
+        _ => demo.run_demo().await,
+    }
+    .map_err(|e| {
+        eprintln!("❌ Demo failed: {}", e);
+        std::process::exit(1);
+    })
+}
+```
+
+This allows you to run either the original demo or the new tokenized version based on command line arguments: `cargo run{:bash}` (original demo) or `cargo run tokenized{:bash}` (tokenized demo).
+
+
+## Running the Tokenized Demo
+
+Let's test out our script.
+
+**Fetch the SAS program** (if you don't already have it):
+```bash
+solana program dump -u m 22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG path/to/sas.so
+```
+
+**Start your test validator**:
+```bash
+solana-test-validator -r --bpf-program 22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG path/to/sas.so
+```
+
+**Run the Tokenized Demo:**
+
+In a separate terminal, run the script using the `tokenized` command line argument:
+
+```bash
+cargo run tokenized
+```
+
+The tokenized demo output should look similar to:
+
+```
+Starting Solana Attestation Service Tokenized Demo
+
+1. Funding payer wallet...
+    - Airdrop completed: 4QE4VGMxnvU9psgjDCYSoRsGEcdZzSsnqFKdzgTf5tPt2i833TC2gLdZE6QZfphie4S9MXNgJEVpQhvwgQJG5Bd5
+
+2. Creating Credential...
+    - Credential created - Signature: 2hb857yRrxficGU6zCMEvMwf6uKTASfgswgmwx1VS9z6zUL66FoapXMNK5VV7P3cZ6HktBMETp2Pu85EvSvUu1dr
+    - Credential PDA: 14Bfygrnpj7bA5H8gvAU3Jr1dfpudZFr2QkJSUFUqoYp
+
+3. Creating Schema...
+    - Schema created - Signature: 3Jo9pQgPcAJj1AmYm6weR9t4tw4Unq2qTxjS5przBUbwt94TLGm1sDaV7Z5pBzt1Kyw4oxuCYg6NkUBijVs6vJ4X
+    - Schema PDA: EyzsLnwtcCXrPJ8bSWHopRRNj3nGicXwuj8McfskToNs
+
+4. Tokenizing Schema...
+    - Schema tokenized - Signature: 5kF8nH2pYrWxcLqZbXhJKS5H8dJ5tX8rQP9C4rL6nKbW2nFgEw4F3JqX9rLqZbXhJKS5H8dJ5tX8rQP9C4rL6n
+    - Schema Mint: HyM3rgg73oWxuQv8564q9LwwRL2rX2fjZD7ssy3X4M3y
+
+5. Creating Tokenized Attestation...
+    - Tokenized attestation created - Signature: 2UJAcwTEF98xge1HPfZicYiBW4NqQDrtBiLcvAWWJ9sx9x4XyYZD4XGuwfkero11Mw5X9fhFzb7QTAMGvewDyZek
+    - Attestation PDA: B2CQ5uqsHgV9QYcCdqfeZGEWNJijTTFgNutNVcFjae8D
+    - Attestation Mint: P7nQ8uqsHgV9QYcCdqfeZGEWNJijTTFgNutNVcFjae8F
+
+6. Verifying Attestations...
+    - Test User is verified
+    - Random User is not verified
+
+7. Verifying Token Attestation...
+    - Attestation Mint: P7nQ8uqsHgV9QYcCdqfeZGEWNJijTTFgNutNVcFjae8F
+    - Test User's token is verified
+
+8. Closing Tokenized Attestation...
+    - Tokenized attestation closed - Signature: 5DS7GYpzKirWcusEgBhN3LGfX7D34q5rSQmbdNpCmzU5nYM1CUA4fJ3B9DRXwuiYNHvMnbBRSiMGDVJoCfLMc6ti
+
+Solana Attestation Service tokenized demo completed successfully!
+```
+
+## Wrap Up
+
+Congratulations! You've successfully extended your Solana Attestation Service implementation with tokenization capabilities. Your SAS workflow now enables you to create NFTs that represent digital credentials, offering enhanced user experiences and wallet integration: 
+
+- **Create schema group tokens** that represent credential collections
+- **Generate attestation NFTs** with rich metadata and non-transferable properties
+- **Implemented token verification** that checks token-based attestations
+- **Added credential revocation** that burns NFTs when closing attestations
+
+The tokenized approach enables seamless wallet and tooling integration while maintaining the same security and verification properties as traditional attestations.
+
+## Additional Resources
+
+- Need help? Ask questions the [Solana Stack Exchange](https://solana.stackexchange.com/) with a `SAS` tag.
+- **[Guide: How to Build Digital Credentials using Solana Attestation Service (Rust)](/guides/rust/how-to-create-digital-credentials)** - Foundation concepts
+- **[Complete Tokenized Example](https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/rust)** - Full source code
+- [**Token-2022 Documentation**](https://spl.solana.com/token-2022)  
+- [**Solana Developer Resources**](https://solana.com/developers)
