@@ -15,17 +15,17 @@ export default defineConfig({
     iconUrl: {
         light: '/favicon.ico',
         dark: '/favicon.ico',
-      },
-      logoUrl: {
+    },
+    logoUrl: {
         light: '/logo.svg',
         dark: '/logo.svg',
-      },
-      socials: [
+    },
+    socials: [
         {
             icon: 'github',
             link: 'https://github.com/solana-foundation/solana-attestation-service',
         },
-      ],
+    ],
     sidebar: [
         {
             text: "Credentials",
@@ -86,32 +86,37 @@ export default defineConfig({
             ]
         },
         {
-            text: "Implementation Guides (TS)",
+            text: "Guides",
             collapsed: false,
             items: [
                 {
-                    text: "Attestation Fundamentals",
-                    link: "/guides/ts/how-to-create-digital-credentials"
+                    text: "TypeScript",
+                    collapsed: false,
+                    items: [
+                        {
+                            text: "Basic attestation flow",
+                            link: "/guides/ts/how-to-create-digital-credentials"
+                        },
+                        {
+                            text: "Tokenized Attestations",
+                            link: "/guides/ts/tokenized-attestations"
+                        }
+                    ]
                 },
                 {
-                    text: "Tokenized Attestations",
-                    link: "/guides/ts/tokenized-attestations"
+                    text: "Rust",
+                    collapsed: false,
+                    items: [
+                        {
+                            text: "Basic attestation flow",
+                            link: "/guides/rust/how-to-create-digital-credentials"
+                        },
+                        {
+                            text: "Tokenized Attestations",
+                            link: "/guides/rust/tokenized-attestations"
+                        }
+                    ]
                 },
-
-            ]
-        },
-        {
-            text: "Implementation Guides (Rust)",
-            collapsed: false,
-            items: [
-                {
-                    text: "Attestation Fundamentals",
-                    link: "/guides/rust/how-to-create-digital-credentials"
-                },
-                {
-                    text: "Tokenized Attestations",
-                    link: "/guides/rust/tokenized-attestations"
-                }
             ]
         },
         {
