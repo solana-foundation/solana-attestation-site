@@ -25,7 +25,7 @@ Returns a `TransactionBuilder` that can be used to build and send the transactio
 ## Example
 
 ```typescript
-import { getCloseTokenizedAttestationInstruction } from "solana-attestation-service";
+import { getCloseTokenizedAttestationInstruction } from "sas-lib";
 
 const transaction = getCloseTokenizedAttestationInstruction({
     payer: payerSigner,
@@ -61,7 +61,7 @@ await transaction.sendAndConfirm();
 
 ## Related
 
-- [Attestations Documentation](../attestations)
-- [Credentials Documentation](../credentials)
+- [Attestations Documentation](/attestations)
+- [Credentials Documentation](/credentials)
 - [System Program Documentation](https://docs.solana.com/developing/runtime-facilities/programs#system-program)
 - [Token Program Documentation](https://spl.solana.com/token) 
