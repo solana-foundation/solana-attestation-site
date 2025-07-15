@@ -6,11 +6,37 @@ export default defineConfig({
     basePath: '/docs',
     font: {
         default: {
-            google: 'Geist Mono',
+            google: 'Geist',
         },
     },
     theme: {
-        colorScheme: 'light'
+        colorScheme: 'light',
+        accentColor: '#9945FF',
+        variables: {
+            color: {
+                background: '#FAFBFC',
+                backgroundDark: '#F3F4F6',
+                border: '#E5E7EB',
+                borderAccent: '#9945FF',
+                text: '#1F2937',
+                textAccent: '#9945FF',
+                codeInlineBackground: '#F3F4F6',
+                codeInlineBorder: '#E5E7EB',
+                codeBlockBackground: '#FAFBFC',
+                successBackground: '#14F19510',
+                successBorder: '#14F195',
+                successText: '#047857',
+                warningBackground: '#FEF3C7',
+                warningBorder: '#F59E0B',
+                warningText: '#D97706',
+                dangerBackground: '#FEE2E2',
+                dangerBorder: '#EF4444',
+                dangerText: '#DC2626',
+                infoBackground: '#00D9E010',
+                infoBorder: '#00D9E0',
+                infoText: '#0891B2',
+            },
+        },
     },
     iconUrl: {
         light: '/favicon.ico',
