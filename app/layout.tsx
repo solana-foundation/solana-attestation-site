@@ -1,28 +1,10 @@
 import type { Metadata } from 'next'
-import localFont from 'next/font/local'
+import localFont, { Geist } from 'next/font/google'
 import { FC, PropsWithChildren } from 'react'
 import { GoogleAnalytics } from '@/entities/settings'
 import './globals.css'
 
-const siteFont = localFont({
-    src: [
-        {
-            path: "../public/BerkeleyMono-Regular.otf",
-            style: "normal",
-            weight: "400"
-        },
-        {
-            path: "../public/BerkeleyMono-Bold.otf",
-            style: "bold",
-            weight: "700"
-        },
-        {
-            path: "../public/BerkeleyMono-Oblique.otf",
-            style: "italic",
-            weight: "400"
-        },
-    ]
-})
+const siteFont = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
     title: 'Solana Attestation Service',
