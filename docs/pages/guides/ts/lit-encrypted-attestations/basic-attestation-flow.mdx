@@ -85,10 +85,10 @@ SOLANA ATTESTATION SERVICE WITH LIT PROTOCOL ENCRYPTED ATTESTATION DEMO
 Before starting this guide, you should have:
 
 - [**Node.js**](https://nodejs.org/en/download) (v22 or later)
-- [**Solana CLI**](https://solana.com/docs/intro/installation) v 2.2.x or greater
+- [**Solana CLI**](https://solana.com/docs/intro/installation) v2.2.x or greater
 - [TypeScript](http://typescriptlang.org/) Experience
 
-Additionally, this guide builds on top of the [Basic Solana Attestation Flow](/guides/ts/how-to-create-digital-credentials) guide, so you should have a working implementation of that guide to add to before starting this one.
+Additionally, this guide builds on top of the [Basic Solana Attestation Flow](/guides/ts/how-to-create-digital-credentials) guide, so you should have a working implementation of that guide before starting this one.
 
 ## Understanding Lit Encryption
 
@@ -170,7 +170,7 @@ When Lit encrypts your attestation data, it returns two crucial pieces of metada
 
 _Prefer to jump straight to the code? Check out our [Examples Repo on GitHub](https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/typescript/attestation-flow-guides/src/lit/sas-standard-lit-demo.ts) for the complete code for this guide\!_
 
-As mentioned above, this guide builds on top of the [Basic Solana Attestation Flow](/guides/ts/how-to-create-digital-credentials) guide, so make sure you have a working implementation of that guide to add to before continuing with this one.
+As mentioned above, this guide builds on top of the [Basic Solana Attestation Flow](/guides/ts/how-to-create-digital-credentials) guide, so make sure you have a working implementation of that guide before continuing with this one.
 
 Let's start by adding the necessary dependencies to encrypt our attestation data with Lit:
 
@@ -217,7 +217,7 @@ We'll cover each of the following types as we use them in this guide, but for no
 
 ```ts
 /**
- * Sign-in With Solana (Siws) messages (following Phantom's specification)
+ * Sign-in With Solana (SIWS) messages (following Phantom's specification)
  * https://github.com/phantom/sign-in-with-solana/tree/main
  */
 export interface SiwsMessage {
@@ -294,7 +294,7 @@ export interface SiwsMessage {
 }
 
 /**
- * Type-safe Siws message for formatting - requires mandatory fields domain and address
+ * Type-safe SIWS message for formatting - requires mandatory fields domain and address
  */
 export interface SiwsMessageForFormatting extends SiwsMessage {
     domain: string // Required for message construction
@@ -697,10 +697,10 @@ Create the file `format-siws-message.ts` in our `lit` helpers directory, and exp
 import { SiwsMessageForFormatting } from '../types'
 
 /**
- * Formats Siws message according to the ABNF specification:
+ * Formats SIWS message according to the ABNF specification:
  * https://github.com/phantom/sign-in-with-solana/blob/main/siws.md#abnf-message-format
  *
- * @param siws - Siws message with required domain and address fields
+ * @param siws - SIWS message with required domain and address fields
  * @returns Formatted message string according to Siws ABNF specification
  */
 export function formatSiwsMessage(siws: SiwsMessageForFormatting): string {
@@ -2220,7 +2220,7 @@ Congratulations! You've successfully implemented a complete Solana Attestation S
 - **Verify and decrypt attestations** programmatically, ensuring only authorized signers can access the underlying data
 - **Close (revoke) attestations** as needed
 
-The Solana Attestation Service provides a powerful foundation for building trust and identity systems on Solana. Whether you're creating compliance systems, financial credentials, professional certifications, or gaming achievements, SAS gives you the tools to issue and verify claims in a decentralized, transparent way.
+The Solana Attestation Service (SAS) provides a powerful foundation for building trust and identity systems on Solana. Whether you're creating compliance systems, financial credentials, professional certifications, or gaming achievements, SAS gives you the tools to issue and verify claims in a decentralized, transparent way.
 
 **Want to learn more?** Check out our [Guide: Encrypted Tokenized Attestations with Lit Protocol](/guides/ts/lit-encrypted-attestations/tokenized-attestation-flow).
 
