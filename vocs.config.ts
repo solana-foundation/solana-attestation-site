@@ -132,12 +132,20 @@ export default defineConfig({
                             collapsed: false,
                             items: [
                                 {
-                                    text: "Basic Attestation Flow",
+                                    text: "Introduction",
+                                    link: "/guides/ts/lit-encrypted-attestations/introduction"
+                                },
+                                {
+                                    text: "Getting Started",
+                                    link: "/guides/ts/lit-encrypted-attestations/getting-started"
+                                },
+                                {
+                                    text: "Encrypted Basic Attestation Flow",
                                     link: "/guides/ts/lit-encrypted-attestations/basic-attestation-flow"
                                 },
                                 {
-                                    text: "Tokenized Attestations",
-                                    link: "/guides/ts/lit-encrypted-attestations/tokenized-attestation-flow"
+                                    text: "Encrypted Tokenized Attestation",
+                                    link: "/guides/ts/lit-encrypted-attestations/tokenized-attestation"
                                 }
                             ]
                         }

@@ -1,349 +1,70 @@
 ---
-title: Encrypted Attestation Data with Lit Protocol
+title: Encrypted Basic Attestation Flow
 description: Learn how to encrypt and control access to attestation data using Lit Protocol's decentralized key management network
 date: 2025-08-12
 ---
 
-# Encrypted Attestation Data with Lit Protocol
+# Encrypted Basic Attestation Flow
 
-## Introduction
+This guide will walk you through integrating Lit encryption into the [Basic Attestation Flow](/guides/ts/how-to-create-digital-credentials) example.
 
-When creating attestations on Solana, you may need to handle sensitive data that shouldn't be publicly visible on-chain. While blockchain provides transparency and immutability, certain attestation use cases require privacy controls - such as medical records, academic transcripts, or confidential business certifications.
-
-This guide demonstrates how to create **encrypted attestations** by combining Solana's attestation capabilities with [Lit Protocol](https://litprotocol.com), a decentralized key management network that enables secure encryption and programmable access control.
-
-### Why Lit Protocol?
-
-Lit Protocol provides a decentralized key management network that solves Web3's security dilemma: how to manage secrets without trusting centralized servers or burdening users with complex key management.
-
-#### Identity-Based Encryption Architecture
-
-Each Lit node runs in a Trusted Execution Environment (TEE) powered by sealed AMD SEV-SNP hardware that isolates key material from node operators.
-
-Lit's encryption uses Identity-Based Encryption with BLS signatures:
-
-1. **Network BLS key generation**: Participating Lit nodes collectively generate a network wide BLS public/private key pair using Distributed Key Generation (DKG)
-2. **Encryption process**: Data is encrypted using the network's BLS public key, with your access control conditions serving as the "identity"
-3. **Decryption policy**: The access control conditions (like wallet ownership, token holdings, or custom logic) become the identity that must be proven for decryption
-
-#### Threshold Decryption Process
-
-To decrypt data, a threshold of more than two-thirds of Lit nodes must collaborate, each providing a BLS signature share:
-
-1. **Policy verification**: Each node independently verifies that your access control conditions are met (checking on-chain state, signatures, etc.)
-2. **Signature share creation**: If conditions are satisfied, each node uses their BLS private key share to sign the identity (your access control policy)
-3. **Threshold reconstruction**: Once enough signature shares are collected, they're combined to create the complete BLS signature
-4. **Data decryption**: The reconstructed BLS signature serves as the decryption key to decrypt your ciphertext
-
-This Identity-Based Encryption approach ensures that decryption keys are generated on-demand only when authorization conditions are met, with no pre-shared secrets or centralized key storage.
-
-## Getting Started
-
-This guide will walk you through creating a complete encrypted attestation script that:
-
-- Creates credential and schema accounts on Solana
-- Encrypts sensitive attestation data using Lit Protocol's decentralized network
-- Stores the encrypted metadata on-chain, keeping the attestation data private
-- Implements SIWS (Sign In With Solana) authentication for decryption using Lit's Identity-Based Encryption, ensuring that only authorized signers can decrypt attestation data
-- Verifies attestations for both attested and non-attested users
-- Verifies that only authorized signers can decrypt attestation data
-- Closes an attestation (effectively revoking a user's credential)
-
-The end goal will be to see a working attestation system in action:
-
-```shell
-================================================================================
-SOLANA ATTESTATION SERVICE WITH LIT PROTOCOL ENCRYPTED ATTESTATION DEMO
-================================================================================
-
-📋 DEMO CONFIGURATION:
-   Network: localnet
-   Organization: LIT-ENCRYPTED-ATTESTATIONS
-   Schema: LIT-ENCRYPTED-METADATA (v1)
-
-🔑 CREATED ACCOUNTS:
-   Credential PDA:    HhU8FzCALX7XThBoPUQnJWAZMJdDeXctdxbedbT4kshV
-   Schema PDA:        HvLgB2BjQN3BzjQszYw6xuCCMpWPEkfs4b1YMrRBEp7H
-   Attestation PDA:   41Tx4apNq6tocjY4FK4QXpZoTeybaPo1hK328SwvpLRf
-   Test User:         JCRGgpTgaun9581uounx61RSmiMxN8KazEjdCnJbBdwB
-
-🧪 VERIFICATION TEST RESULTS:
-   Test User Verification:     ✅ PASSED
-   Encrypted Metadata:
-     - Ciphertext: plYShVUjPEdl69jWh54tjutxcBEjx7GiCYH1KKfnowhqUWOPkH...
-     - Data Hash: 4efa888818ad5ba81b0e459037eb8c62a3f0bdf401de5372e21d8aa132a0a808
-   Decrypted Attestation Data: {"name":"test-user","age":100,"country":"usa"}
-   Random User Verification:   ✅ PASSED (correctly rejected)
-   Unauthorized Signer Test:   ✅ PASSED (correctly rejected)
-   ✅ ALL TESTS PASSED! Demo completed successfully.
-
-================================================================================
-```
-
-### Prerequisites
+## Prerequisites
 
 Before starting this guide, you should have:
 
 - [**Node.js**](https://nodejs.org/en/download) (v22 or later)
 - [**Solana CLI**](https://solana.com/docs/intro/installation) v2.2.x or greater
 - [TypeScript](http://typescriptlang.org/) Experience
+- A working implementation of the [Basic Attestation Flow](/guides/ts/how-to-create-digital-credentials) guide
+- All of the prerequisite Lit helpers functions from the [Getting Started](/guides/ts/lit-encrypted-attestations/getting-started) guide
 
-Additionally, this guide builds on top of the [Basic Solana Attestation Flow](/guides/ts/how-to-create-digital-credentials) guide, so you should have a working implementation of that guide before starting this one.
+## Updating the Existing Implementation
 
-## Understanding Lit Encryption
-
-To effectively use Lit Protocol for encrypted attestations, it's important to understand the key components and how they work together to provide secure, programmable access control.
-
-### Lit Actions
-
-Lit Actions are JavaScript programs that run inside the secure hardware (TEEs) of Lit nodes across the decentralized Lit Protocol network.
-
-They are similar to smart contracts, but can interact with both on-chain and off-chain data to perform complex authorization logic.
-
-Each Lit node independently executes the same Lit Action in isolation, and more than two-thirds of nodes must agree on the result for consensus. This allows Lit Actions to securely:
-
-- Fetch data from external APIs (like Solana RPC endpoints).
-- Perform complex authorization logic.
-- Only authorize decryption when specific conditions are met.
-
-The Lit Action for this attestation demo acts as an authorization gatekeeper for decryption. It performs four key checks:
-
-1. **SIWS Authentication**: Validates the SIWS message, ensuring correct format, unexpired timestamp, and a valid signature from the claimed wallet.
-2. **Credential Verification**: Fetches the credential account from Solana, confirming its existence, correct program ownership, and data integrity.
-3. **Authorization**: Checks if the SIWS wallet address is listed as an authorized signer in the credential.
-4. **Conditional Decryption**: Only if all checks pass, the Lit Action decrypts and returns the attestation data; otherwise, access is denied.
-
-This ensures only explicitly authorized wallets can decrypt attestation data.
-
-### Access Control Conditions
-
-Access Control Conditions (ACCs) are the rules that determine who can decrypt your data, and under what circumstances. The Lit network will only allow decryption if these specific conditions are met.
-
-For this attestation demo, the ACCs are structured as:
-
-```typescript
-import ipfsOnlyHash from 'typestub-ipfs-only-hash'
-
-// This is the custom Lit Action created for this demo,
-// we'll be diving into it's implementation later in this guide
-import { litActionCode as litActionCodeDecrypt } from '../litActionDecrypt'
-
-const accessControlConditions = [
-    {
-        method: '',
-        params: [':currentActionIpfsId'],
-        pdaParams: [],
-        pdaInterface: { offset: 0, fields: {} },
-        pdaKey: '',
-        chain: 'solana',
-        returnValueTest: {
-            key: '',
-            comparator: '=',
-            value: await ipfsOnlyHash.of(litActionCodeDecrypt),
-        },
-    },
-]
-```
-
-Let's break down what each field means:
-
-- `params: [':currentActionIpfsId']`: A special parameter that gets the [IPFS CID](https://docs.ipfs.tech/concepts/content-addressing/) of the currently executing Lit Action
-- `chain: 'solana'`: Tells Lit Protocol this condition involves the Solana blockchain
-- `returnValueTest`: The authorization logic that must be satisfied for decryption to be permitted
-    - `comparator: '='`: The boolean operator used for comparison
-    - `value: await ipfsOnlyHash.of(litActionCodeDecrypt)`: The IPFS CID of our specific custom Lit Action for decryption
-
-This ACC is essentially saying:
-
-> "Only allow decryption if the request is coming from the Lit Action we specifically designed for authorizing attestation decryption."
-
-Since the Lit Action contains all the business logic for checking SIWS authentication and Solana credential authorization, this ACC ensures only authorized signers of the Solana credential can decrypt the attestation data.
-
-### Encryption Metadata
-
-When Lit encrypts your attestation data, it returns two crucial pieces of metadata that are required for decryption:
-
-- `ciphertext`: This is the actual encrypted version of your sensitive attestation data.
-- `dataToEncryptHash`: A cryptographic hash of the original data and the ACCs used to encrypted the data.
-
-## Project Setup
-
-_Prefer to jump straight to the code? Check out our [Examples Repo on GitHub](https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/typescript/attestation-flow-guides/src/lit/sas-standard-lit-demo.ts) for the complete code for this guide\!_
-
-As mentioned above, this guide builds on top of the [Basic Solana Attestation Flow](/guides/ts/how-to-create-digital-credentials) guide, so make sure you have a working implementation of that guide before continuing with this one.
-
-Let's start by adding the necessary dependencies to encrypt our attestation data with Lit:
-
-:::code-group
-
-```bash [npm]
-npm init -y
-npm i \
-    @lit-protocol/auth-helpers \
-    @lit-protocol/constants \
-    @lit-protocol/lit-node-client \
-npm i --save-dev @lit-protocol/types
-```
-
-```bash [pnpm]
-pnpm init
-pnpm i \
-    @lit-protocol/auth-helpers \
-    @lit-protocol/constants \
-    @lit-protocol/lit-node-client \
-pnpm i -D @lit-protocol/types
-```
-
-```bash [yarn]
-yarn init -y
-yarn add \
-    @lit-protocol/auth-helpers \
-    @lit-protocol/constants \
-    @lit-protocol/lit-node-client \
-yarn add -D @lit-protocol/types
-```
-
-:::
-
-Within your existing `solana-attestation-demo` directory, create a `lit` directory we can use to store our Lit related files:
-
-```bash
-mkdir lit
-```
-
-### Creating a Types file
-
-We'll cover each of the following types as we use them in this guide, but for now, let's create a `types.ts` file that will contain the types we'll be using:
-
-```ts
-/**
- * Sign-in With Solana (SIWS) messages (following Phantom's specification)
- * https://github.com/phantom/sign-in-with-solana/tree/main
- */
-export interface SiwsMessage {
-    /**
-     * Optional EIP-4361 domain requesting the sign-in.
-     * If not provided, the wallet must determine the domain to include in the message.
-     */
-    domain?: string
-    /**
-     * Optional Solana address performing the sign-in. The address is case-sensitive.
-     * If not provided, the wallet must determine the Address to include in the message.
-     */
-    address?: string
-    /**
-     * Optional EIP-4361 Statement. The statement is a human readable string and should not have new-line characters (\n).
-     * If not provided, the wallet must not include Statement in the message.
-     */
-    statement?: string
-    /**
-     * Optional EIP-4361 URI. The URL that is requesting the sign-in.
-     * If not provided, the wallet must not include URI in the message.
-     */
-    uri?: string
-    /**
-     * Optional EIP-4361 version.
-     * If not provided, the wallet must not include Version in the message.
-     */
-    version?: string
-    /**
-     * Optional EIP-4361 Chain ID.
-     * The chainId can be one of the following: mainnet, testnet, devnet, localnet, solana:mainnet, solana:testnet, solana:devnet.
-     * If not provided, the wallet must not include Chain ID in the message.
-     */
-    chainId?: string
-    /**
-     * Optional EIP-4361 Nonce.
-     * It should be an alphanumeric string containing a minimum of 8 characters.
-     * If not provided, the wallet must not include Nonce in the message.
-     */
-    nonce?: string
-    /**
-     * Optional ISO 8601 datetime string.
-     * This represents the time at which the sign-in request was issued to the wallet.
-     * Note: For Phantom, issuedAt has a threshold and it should be within +/- 10 minutes from the timestamp at which verification is taking place.
-     * If not provided, the wallet must not include Issued At in the message.
-     */
-    issuedAt?: string
-    /**
-     * Optional ISO 8601 datetime string.
-     * This represents the time at which the sign-in request should expire.
-     * If not provided, the wallet must not include Expiration Time in the message.
-     */
-    expirationTime?: string
-    /**
-     * Optional ISO 8601 datetime string.
-     * This represents the time at which the sign-in request becomes valid.
-     * If not provided, the wallet must not include Not Before in the message.
-     */
-    notBefore?: string
-    /**
-     * Optional EIP-4361 Request ID.
-     * In addition to using nonce to avoid replay attacks, dapps can also choose to include a unique signature in the requestId.
-     * Once the wallet returns the signed message, dapps can then verify this signature against the state to add an additional, strong layer of security.
-     * If not provided, the wallet must not include Request ID in the message.
-     */
-    requestId?: string
-    /**
-     * Optional EIP-4361 Resources.
-     * Usually a list of references in the form of URIs that the dapp wants the user to be aware of.
-     * These URIs should be separated by \n-, i.e., URIs in new lines starting with the character '-'.
-     * If not provided, the wallet must not include Resources in the message.
-     */
-    resources?: string[]
-}
-
-/**
- * Type-safe SIWS message for formatting - requires mandatory fields domain and address
- */
-export interface SiwsMessageForFormatting extends SiwsMessage {
-    domain: string // Required for message construction
-    address: string // Required for message construction
-}
-
-/**
- * Input for createSiwsMessage - requires address, all other fields optional
- */
-export interface SiwsMessageInput extends Partial<SiwsMessage> {
-    address: string // Address is mandatory for creation
-}
-
-export interface AttestationEncryptionMetadata {
-    ciphertext: string
-    dataToEncryptHash: string
-}
-
-export interface PkpInfo {
-    ethAddress: string
-    publicKey: string
-    tokenId: string
-}
-
-export interface LitDecryptionResponse {
-    success: boolean
-    message: string
-    error?: string
-    authorizedSigners?: string[]
-    requestingSigner?: string
-    decryptedData?: string
-}
-```
-
-## Updating the Existing Attestation Implementation
-
-Let's update the existing file, `attestation-demo.ts`, as well as create our Lit related files that allow us to encrypted our attestation data:
+Let's update the existing file, `attestation-demo.ts`, to utilize our Lit helpers functions to encrypt the attestation data:
 
 ### Imports and Configuration
 
-Start with the adding necessary imports:
-
-_Add these dependencies to the existing ones from the Basic Solana Attestation Flow guide._
+Start with the adding necessary imports, the following are all the imports required for this code example:
 
 ```ts
 import type { LitNodeClient } from '@lit-protocol/lit-node-client'
-import { fetchCredential } from 'sas-lib'
-import { KeyPairSigner } from 'gill'
+import {
+    getCreateCredentialInstruction,
+    getCreateSchemaInstruction,
+    serializeAttestationData,
+    getCreateAttestationInstruction,
+    fetchSchema,
+    getChangeAuthorizedSignersInstruction,
+    fetchAttestation,
+    deserializeAttestationData,
+    deriveAttestationPda,
+    deriveCredentialPda,
+    deriveSchemaPda,
+    deriveEventAuthorityAddress,
+    getCloseAttestationInstruction,
+    SOLANA_ATTESTATION_SERVICE_PROGRAM_ADDRESS,
+    fetchCredential,
+} from 'sas-lib'
+import {
+    airdropFactory,
+    generateKeyPairSigner,
+    lamports,
+    Signature,
+    TransactionSigner,
+    KeyPairSigner,
+    Instruction,
+    Address,
+    Blockhash,
+    createSolanaClient,
+    createTransaction,
+    SolanaClient,
+} from 'gill'
+import { estimateComputeUnitLimitFactory } from 'gill/programs'
 import { ethers } from 'ethers'
+
+import { createSiwsMessage, decryptAttestationData, encryptAttestationData, setupLit, signSiwsMessage } from './lit-helpers'
+import { AttestationEncryptionMetadata } from './types'
+import { getAuthorizedSigner1Keypair, getAuthorizedSigner2Keypair, getIssuerKeypair } from './get-keypair'
 ```
 
 Next, update the existing configuration:
@@ -373,138 +94,13 @@ For this example, the `SCHEMA_LAYOUT` is set to `Buffer.from([12, 12])` which co
 - the first `12` represents a String type for the `ciphertext` field,
 - the second `12` represents a String type for the `dataToEncryptHash` field.
 
-### Utility Functions
+### Updating `setupWallets`
 
-Next, we're going to make some modifications to the existing `setupWallets` helper function. Instead of generating new keypairs for `authorizedSigner1`, `authorizedSigner2`, and `issuer` every time we run the script, we're going to generate them once and same them to a keyfile.
+Next, we're going to make some modifications to the existing `setupWallets` helper function. Instead of generating new keypairs for `authorizedSigner1`, `authorizedSigner2`, and `issuer` every time we run the script, we're going to generate them once and save them as keyfiles in the directory: `key-pairs`.
 
-This is because we need to have a static and predetermined Credential PDA address that will be hardcoded within our Lit Action that handles the authorization checks and decryption. Hardcoding the Credential PDA allows the Lit Action to enforce that only authorized signers for the specific Credential are authorized to decrypt the attestation data.
+This is because we need to have a static and predetermined credential PDA that will be hardcoded within our Lit Action that handles the authorization checks and decryption. Hardcoding the credential PDA allows the Lit Action to enforce that only authorized signers for the specific credential are authorized to decrypt the attestation data.
 
-#### Creating the Authorized Signer and Issuer Keypairs
-
-Let's start by creating a new `get-keypair.ts` file that will handle generating new keypairs, saving them to a keyfile, and loading them from the keyfile:
-
-```ts
-import { existsSync, mkdirSync } from 'fs'
-import { generateExtractableKeyPairSigner } from 'gill'
-import { loadKeypairSignerFromFile, saveKeypairSignerToFile } from 'gill/node'
-import path from 'path'
-
-async function generateKeypair(outputPath: string) {
-    const extractableSigner = await generateExtractableKeyPairSigner()
-    await saveKeypairSignerToFile(extractableSigner, outputPath)
-}
-
-async function getKeyPair(keyPairName: string) {
-    const keyPairDir = 'key-pairs'
-    const keyPairPath = path.join(keyPairDir, `${keyPairName}.keypair.json`)
-    if (!existsSync(keyPairPath)) {
-        // Ensure the directory exists before creating the file
-        if (!existsSync(keyPairDir)) {
-            mkdirSync(keyPairDir, { recursive: true })
-        }
-        console.log(`${keyPairName} keypair does not exist at path: ${keyPairPath}. Generating it...`)
-        await generateKeypair(keyPairPath)
-    }
-
-    return loadKeypairSignerFromFile(keyPairPath)
-}
-
-export async function getIssuerKeypair() {
-    const keypair = await getKeyPair('issuer')
-    console.log(`Got Issuer keypair with address: ${keypair.address}`)
-    return keypair
-}
-
-export async function getAuthorizedSigner1Keypair() {
-    const keypair = await getKeyPair('authorized-signer-1')
-    console.log(`Got Authorized Signer 1 keypair with address: ${keypair.address}`)
-    return keypair
-}
-
-export async function getAuthorizedSigner2Keypair() {
-    const keypair = await getKeyPair('authorized-signer-2')
-    console.log(`Got Authorized Signer 2 keypair with address: ${keypair.address}`)
-    return keypair
-}
-```
-
-#### Deriving the Credential PDA from the Issuer Keypair
-
-Next we'll create a new helper script called `generate-credential-pda.ts` that will generate a new or load an existing Issuer keypair, and use it to derive the Credential PDA address:
-
-```ts
-import { deriveCredentialPda } from 'sas-lib'
-
-import { getIssuerKeypair } from './get-keypair'
-
-async function main() {
-    console.log('Starting credential PDA generator\n')
-
-    // Step 1: Get issuer keypair
-    console.log('1. Getting Issuer keypair...')
-    const issuer = await getIssuerKeypair()
-
-    // Step 2: Create Credential
-    console.log('\n2. Creating Credential...')
-    const [credentialPda] = await deriveCredentialPda({
-        authority: issuer.address,
-        name: 'LIT-ENCRYPTED-METADATA',
-    })
-
-    console.log(`Credential PDA: ${credentialPda}`)
-}
-
-main()
-    .then(() => console.log('\nCredential PDA generated successfully!'))
-    .catch(error => {
-        console.error('❌ Failed to generate credential PDA:', error)
-        process.exit(1)
-    })
-```
-
-To run this helper script, we'll add a new script to our `package.json` file:
-
-```json
-"scripts": {
-  "generate-credential-pda": "ts-node generate-credential-pda.ts",
-}
-```
-
-##### Running the Generate Credential PDA Script
-
-Before continuing with this guide, you'll need to run this script which will generate the Issuer keypair and Credential PDA, and save their keyfiles to a directory called `key-pairs`. After running the script, you should see output similar to:
-
-```bash
-pnpm generate-credential-pda
-
-> solana-attestation-demo-ts@1.0.0 generate-credential-pda attestation-flow-guides
-> ts-node src/lit/generate-credential-pda.ts
-
-Starting credential PDA generator
-
-1. Getting Issuer keypair...
-issuer keypair does not exist at path: key-pairs/issuer.keypair.json. Generating it...
-Got Issuer keypair with address: EFjEXBpSHL7xXUNZEQf5CKWD7dZHkLfqc1i9tceoqms2
-
-2. Creating Credential...
-Credential PDA: Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk
-
-Credential PDA generated successfully!
-```
-
-The line: `Credential PDA: Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk` is important and what we'll need to hardcode into our Lit Action later in this guide.
-
-#### Updating the Setup Wallets Function
-
-Now that we have our keyfiles generated, and some helper functions to load them, we can update the `setupWallets` function to load the keypairs from the keyfiles instead of generating new ones every time.
-
-First add the import in the `attestation-demo.ts` file:
-
-```ts
-import { getAuthorizedSigner1Keypair, getAuthorizedSigner2Keypair, getIssuerKeypair } from './get-keypair'
-```
-
-Then update the `setupWallets` function to load the keypairs from the keyfiles:
+Update the `setupWallets` function to load the keypairs from the keyfiles if they exist, otherwise generate new ones:
 
 ```ts
 async function setupWallets(client: SolanaClient) {
@@ -534,14 +130,7 @@ This is a key change to the existing Basic Solana Attestation Flow, and without 
 
 ### Updating the Attestation Verification Function
 
-We'll be modifying the existing `verifyAttestation` function to handle retrieving the Lit encryption metadata from the on-chain attestation data, and decrypting by submitting a signed Sign-in-with-Solana (SIWS) message to our custom decryption Lit Action.
-
-_Make sure to add the following imports to the top of the file:_
-
-```ts
-import { createSiwsMessage, decryptAttestationData, signSiwsMessage } from './lit-helpers'
-import { AttestationEncryptionMetadata } from './types'
-```
+Next we'll be modifying the existing `verifyAttestation` function to handle retrieving the Lit encryption metadata from the on-chain attestation data, and decrypting it by submitting a signed SIWS message to our custom decryption Lit Action.
 
 ```ts
 async function verifyAttestation({
@@ -614,1132 +203,61 @@ Let's cover the differences between the existing `verifyAttestation` function an
 - New return value type for `deserializeAttestationData`:
     - Previously, this function call returned the raw attestation data that was stored on-chain, but now it's returning `AttestationEncryptionMetadata` (as defined in our [`types.ts` file](#creating-a-types-file)) which is our Lit encryption metadata: `ciphertext` and `dataToEncryptHash`.
 
-#### Diving into the Decryption Process
+## Setting Up the `main` Function
 
-As a prerequisite to making the decryption request to the Lit network, we need to create and sign a SIWS message with one of the Credential's Authorized Signer keypairs.
+Now that we've setup and covered all the parts of this demo, let's run it!
 
-##### Creating the SIWS Message
+The following demonstration script follows the same pattern as the Basic Attestation Flow guide, but with some changes that demonstrate how to use the helper functions we created above to encrypt the attestation data.
 
-Let's create the file `create-siws-message.ts` in our `lit` helpers directory, and export the function `createSiwsMessage`:
+### Prerequisites
 
-```ts
-import { SiwsMessageForFormatting, SiwsMessageInput } from '../types'
+As mentioned previously, before we can run the code example script, we need to generate the Issuer and Authorized Signers keypairs, derive the Credential PDA, and paste the address into our decryption Lit Action.
 
-/**
- * Creates a complete Siws message by filling in missing properties with sensible defaults
- * @param siws - Siws message object with required address field
- * @returns Complete Siws message with all fields populated
- */
-export function createSiwsMessage(siws: SiwsMessageInput): SiwsMessageForFormatting {
-    const now = new Date()
-    const expirationTime = new Date(now.getTime() + 10 * 60 * 1000) // 10 minutes
+To do this, we'll add a new script to our `package.json` file:
 
-    // Generate a proper nonce if not provided (minimum 8 characters, alphanumeric)
-    const generatedNonce = siws.nonce || Math.random().toString(36).substring(2, 12) // 10 character alphanumeric
-
-    // Merge siws with defaults, siws values take precedence
-    return {
-        domain: siws.domain || 'localhost',
-        address: siws.address,
-        statement: siws.statement || 'Sign this message to authenticate with Lit Protocol',
-        uri: siws.uri || 'http://localhost',
-        version: siws.version || '1',
-        chainId: siws.chainId || 'devnet', // Must be string as per Siws spec: mainnet, testnet, devnet, localnet, etc.
-        nonce: generatedNonce,
-        issuedAt: siws.issuedAt || now.toISOString(),
-        expirationTime: siws.expirationTime || expirationTime.toISOString(),
-        notBefore: siws.notBefore,
-        requestId: siws.requestId,
-        resources: siws.resources || [],
-    }
+```json
+"scripts": {
+  "generate-credential-pda": "ts-node generate-credential-pda.ts",
 }
 ```
 
-_As with the rest of this guide, any imported custom types are defined in the [`types.ts` file](#creating-a-types-file) we created previously._
+And run it:
 
-This helper function utilizes [Phantom's SIWS message specification](https://github.com/phantom/sign-in-with-solana/tree/main), and is used to prove the identity of a Credential signer to the Lit network. This SIWS message is part of the authorization process in our custom Lit Action that will gatekeep who is permitted to decrypt the attestation data.
+:::code-group
 
-##### Signing the SIWS Message
-
-Going back to the `verifyAttestation` function, the next step after creating the SIWS message is to sign it with a Credential's Authorized Signer keypair. To do this we'll create the file `sign-siws-message.ts` in our `lit` helpers directory, and export the function `signSiwsMessage`:
-
-```ts
-import { ethers } from 'ethers'
-import { createSignableMessage, KeyPairSigner } from 'gill'
-
-import { SiwsMessageForFormatting } from '../types'
-import { formatSiwsMessage } from './format-siws-message'
-
-/**
- * Signs a SIWS message using a Solana keypair signer
- * @param siwsMessage - The formatted SIWS message to sign
- * @param signer - The Solana KeyPairSigner from setupWallets
- * @returns Base58-encoded signature
- */
-export async function signSiwsMessage(siwsMessage: SiwsMessageForFormatting, signer: KeyPairSigner): Promise<string> {
-    try {
-        const message = createSignableMessage(new TextEncoder().encode(formatSiwsMessage(siwsMessage)))
-        const signedMessage = await signer.signMessages([message])
-        return ethers.utils.base58.encode(signedMessage[0][signer.address])
-    } catch (error) {
-        throw new Error(`Failed to sign SIWS message: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-}
+```bash [npm]
+npm run generate-credential-pda
 ```
 
-This utilizes a helper function, `formatSiwsMessage`, that makes sure our SIWS message object is properly formatted as defined in Phantom's SIWS message specification.
-
-##### Formatting the SIWS Message
-
-Create the file `format-siws-message.ts` in our `lit` helpers directory, and export the function `formatSiwsMessage`:
-
-```ts
-import { SiwsMessageForFormatting } from '../types'
-
-/**
- * Formats SIWS message according to the ABNF specification:
- * https://github.com/phantom/sign-in-with-solana/blob/main/siws.md#abnf-message-format
- *
- * @param siws - SIWS message with required domain and address fields
- * @returns Formatted message string according to Siws ABNF specification
- */
-export function formatSiwsMessage(siws: SiwsMessageForFormatting): string {
-    if (!siws.domain || !siws.address) {
-        throw new Error('Domain and address are required for Siws message construction')
-    }
-
-    // Start with the mandatory domain and address line
-    let message = `${siws.domain} wants you to sign in with your Solana account:\n${siws.address}`
-
-    // Add statement if provided (with double newline separator)
-    if (siws.statement) {
-        message += `\n\n${siws.statement}`
-    }
-
-    // Collect advanced fields in the correct order as per ABNF spec
-    const fields: string[] = []
-
-    if (siws.uri) {
-        fields.push(`URI: ${siws.uri}`)
-    }
-    if (siws.version) {
-        fields.push(`Version: ${siws.version}`)
-    }
-    if (siws.chainId) {
-        fields.push(`Chain ID: ${siws.chainId}`)
-    }
-    if (siws.nonce) {
-        fields.push(`Nonce: ${siws.nonce}`)
-    }
-    if (siws.issuedAt) {
-        fields.push(`Issued At: ${siws.issuedAt}`)
-    }
-    if (siws.expirationTime) {
-        fields.push(`Expiration Time: ${siws.expirationTime}`)
-    }
-    if (siws.notBefore) {
-        fields.push(`Not Before: ${siws.notBefore}`)
-    }
-    if (siws.requestId) {
-        fields.push(`Request ID: ${siws.requestId}`)
-    }
-    if (siws.resources && siws.resources.length > 0) {
-        fields.push(`Resources:`)
-        for (const resource of siws.resources) {
-            fields.push(`- ${resource}`)
-        }
-    }
-
-    // Add advanced fields if any exist (with double newline separator)
-    if (fields.length > 0) {
-        message += `\n\n${fields.join('\n')}`
-    }
-
-    return message
-}
+```bash [pnpm]
+pnpm generate-credential-pda
 ```
 
-##### Making the Decryption Request
-
-Lastly, back in the `verifyAttestation` function, we'll use the `decryptAttestationData` helper function to make the decryption request to the Lit network.
-
-Create the file `decrypt-attestation-data.ts` in our `lit` helpers directory, and export the function `decryptAttestationData`:
-
-```ts
-import { LitNodeClient } from '@lit-protocol/lit-node-client'
-import { generateAuthSig, createSiweMessage, LitAccessControlConditionResource, LitActionResource } from '@lit-protocol/auth-helpers'
-import { LIT_ABILITY } from '@lit-protocol/constants'
-import { ethers } from 'ethers'
-
-import { LitDecryptionResponse, SiwsMessageForFormatting } from '../types'
-import { litActionCode as litActionCodeDecrypt } from '../litActionDecrypt'
-
-export const decryptAttestationData = async ({
-    litNodeClient,
-    litPayerEthersWallet,
-    ciphertext,
-    dataToEncryptHash,
-    siwsMessage,
-    siwsMessageSignature,
-}: {
-    litNodeClient: LitNodeClient
-    litPayerEthersWallet: ethers.Wallet
-    ciphertext: string
-    dataToEncryptHash: string
-    siwsMessage: SiwsMessageForFormatting
-    siwsMessageSignature: string
-}) => {
-    try {
-        const response = await litNodeClient.executeJs({
-            code: litActionCodeDecrypt,
-            sessionSigs: await litNodeClient.getSessionSigs({
-                chain: 'ethereum',
-                expiration: new Date(Date.now() + 1000 * 60 * 10).toISOString(), // 10 minutes
-                resourceAbilityRequests: [
-                    {
-                        resource: new LitActionResource('*'),
-                        ability: LIT_ABILITY.LitActionExecution,
-                    },
-                    {
-                        resource: new LitAccessControlConditionResource('*'),
-                        ability: LIT_ABILITY.AccessControlConditionDecryption,
-                    },
-                ],
-                authNeededCallback: async ({ uri, expiration, resourceAbilityRequests }) => {
-                    const toSign = await createSiweMessage({
-                        uri,
-                        expiration,
-                        resources: resourceAbilityRequests,
-                        walletAddress: await litPayerEthersWallet.getAddress(),
-                        nonce: await litNodeClient.getLatestBlockhash(),
-                        litNodeClient,
-                    })
-
-                    return await generateAuthSig({
-                        signer: litPayerEthersWallet,
-                        toSign,
-                    })
-                },
-            }),
-            jsParams: {
-                siwsMessage: JSON.stringify(siwsMessage),
-                siwsMessageSignature,
-                ciphertext,
-                dataToEncryptHash,
-            },
-        })
-
-        const responseJSON = JSON.parse(response.response as string) as LitDecryptionResponse
-
-        if (!responseJSON.hasOwnProperty('success')) {
-            throw new Error(`Unexpected return value from Lit decryption request: ${response.response}`)
-        }
-
-        if (responseJSON.success === false) {
-            throw new Error(`Failed to decrypt attestation data: ${response.response}`)
-        }
-
-        return responseJSON.decryptedData
-    } catch (error) {
-        throw new Error(`An unexpected error occurred while decrypting the attestation data: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-}
-```
-
-This function is the main integration point for the Lit SDK, and it's responsible for setting up and executing the request to the Lit network to execute our custom Lit Action that authorizes decryption of the attestation data.
-
-For the input parameters for this function, we'll cover `litNodeClient` and `litPayerEthersWallet` in more detail later in this guide, and the remaining are as follows:
-
-- `ciphertext`: This is the encrypted attestation data that we'll be decrypting, and was obtained from the on-chain attestation data.
-- `dataToEncryptHash`: This is the hash of the data that was encrypted along with our Access Control Conditions, and was also obtained from the on-chain attestation data.
-- `siwsMessage`: This is the SIWS message that we [created previously](#creating-the-siws-message) and is used in the authorization process that validates the person making the decryption request is permitted to decrypt the attestation data.
-- `siwsMessageSignature`: This is the signature of the SIWS message that was [previously signed](#signing-the-siws-message) with one of the Credential's Authorized Signer keypairs.
-
-The `litNodeClient.executeJs` function is used to execute our custom Lit Action and takes several parameters:
-
-###### `code`
-
-```ts
-code: litActionCodeDecrypt,
-```
-
-This is the code for our custom Lit Action that will be executed on the Lit network. The code can be uploaded to IPFS and referenced here using it's IPFS CID, or the code can be provided as a string as we're doing in this guide.
-
-We setup and dive into the Lit Action code in the [Decryption Lit Action](#the-decryption-lit-action) section.
-
-###### `sessionSigs`
-
-```ts
-sessionSigs: await litNodeClient.getSessionSigs({
-    chain: "ethereum",
-    expiration: new Date(Date.now() + 1000 * 60 * 10).toISOString(), // 10 minutes
-    resourceAbilityRequests: [
-        {
-            resource: new LitActionResource("*"),
-            ability: LIT_ABILITY.LitActionExecution,
-        },
-        {
-            resource: new LitAccessControlConditionResource("*"),
-            ability: LIT_ABILITY.AccessControlConditionDecryption,
-        },
-    ],
-    authNeededCallback: async ({
-        uri,
-        expiration,
-        resourceAbilityRequests,
-    }) => {
-        const toSign = await createSiweMessage({
-            uri,
-            expiration,
-            resources: resourceAbilityRequests,
-            walletAddress: await litPayerEthersWallet.getAddress(),
-            nonce: await litNodeClient.getLatestBlockhash(),
-            litNodeClient,
-        });
-
-        return await generateAuthSig({
-            signer: litPayerEthersWallet,
-            toSign,
-        });
-    },
-}),
-```
-
-Similar to paying for gas when using a blockchain, payment is required when making requests to the Lit network that require execution by the Lit nodes e.g. decrypting data. Session Signatures are how your identity is proven to the Lit network so that payment for your request can be processed. Additionally, a Session can be restricited to only permit specific tasks such as executing Lit Actions and decrypting data, as done in this guide.
-
-Session Signatures are created by specifying what `resourceAbilityRequests` are permitted to be executed using the Session, and an authentication function given to `authNeededCallback` to prove your identity. In this guide we're signing a Sign-in-with-Ethereum message using an Ethereum wallet which we generate randomly everytime the script is run.
-
-For this guide, the identity of the person paying for the decryption request to the Lit network is irrelevant, as we're using the Lit Datil-dev network which doesn't actually charge for usage of the network, however we're still required to authenticate with the Lit network via a Session.
-
-If you'd like to transition this guide to use the Lit Datil-test or mainnet, you'll need to learn about [paying for usage of the Lit network](https://developer.litprotocol.com/paying-for-lit/overview). You can also learn more about how Session Signatures work, and how to customize them [here](https://developer.litprotocol.com/sdk/authentication/session-sigs/intro).
-
-###### `jsParams`
-
-```ts
-jsParams: {
-  siwsMessage: JSON.stringify(siwsMessage),
-  siwsMessageSignature,
-  ciphertext,
-  dataToEncryptHash,
-},
-```
-
-The `jsParams` is an object or parameters that will be injected into the Lit Action runtime as global variables. So the keys of this object will be the variable names, and the object values will be the values of the parameters as defined here.
-
-Our custom Lit Action requires the raw SIWS message, the signature of the SIWS message, and the Lit encryption metadata in order to perform the authorization checks and decrypt the attestation data.
-
-##### The Decryption Lit Action
-
-Create the file `litActionDecrypt.ts` outside of the `lit` helpers directory (put the file in the same directory as the `attestation-demo.ts` file), and copy and paste the following code:
-
-:::details[Below we'll be diving into the Lit Action code, piece by piece, but click here to view the complete Lit Action Code.]
-
-```ts
-// @ts-nocheck
-
-const _litActionCode = async () => {
-    // Hardcoded values for this specific attestation service instance
-    const AUTHORIZED_RPC_URL = 'https://api.devnet.solana.com'
-    const AUTHORIZED_PROGRAM_ID = '22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG'
-    const AUTHORIZED_CREDENTIAL_PDA = 'Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk'
-
-    async function fetchAccountData(rpcUrl, address) {
-        try {
-            const response = await fetch(rpcUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'getAccountInfo',
-                    params: [address, { encoding: 'base64', commitment: 'confirmed' }],
-                }),
-            })
-
-            const data = await response.json()
-            if (data.error) {
-                throw new Error(`RPC error: ${data.error.message}`)
-            }
-
-            if (!data.result || !data.result.value) {
-                throw new Error('Account not found')
-            }
-
-            const accountInfo = data.result.value
-            return {
-                data: ethers.utils.base64.decode(accountInfo.data[0]),
-                owner: accountInfo.owner,
-            }
-        } catch (error) {
-            console.error('Error fetching account data:', error)
-            throw error
-        }
-    }
-
-    function parseCredentialAccount(data) {
-        let offset = 0
-
-        // Skip discriminator (1 byte)
-        offset += 1
-
-        // Read authority (32 bytes)
-        const authority = ethers.utils.base58.encode(data.slice(offset, offset + 32))
-        offset += 32
-
-        // Read name length (4 bytes, little-endian)
-        const nameLength = new DataView(data.buffer, offset, 4).getUint32(0, true)
-        offset += 4
-
-        // Skip name bytes
-        offset += nameLength
-
-        // Read authorized signers length (4 bytes, little-endian)
-        const signersLength = new DataView(data.buffer, offset, 4).getUint32(0, true)
-        offset += 4
-
-        // Read authorized signers
-        const authorizedSigners = []
-        for (let i = 0; i < signersLength; i++) {
-            const signer = ethers.utils.base58.encode(data.slice(offset, offset + 32))
-            authorizedSigners.push(signer)
-            offset += 32
-        }
-
-        return { authority, authorizedSigners }
-    }
-
-    function getSiwsMessage(siwsInput) {
-        console.log('Attempting to parse SIWS message: ', siwsInput)
-
-        if (!siwsInput.domain || !siwsInput.address) {
-            throw new Error('Domain and address are required for Siws message construction')
-        }
-
-        // Start with the mandatory domain and address line
-        let message = `${siwsInput.domain} wants you to sign in with your Solana account:\n${siwsInput.address}`
-
-        // Add statement if provided (with double newline separator)
-        if (siwsInput.statement) {
-            message += `\n\n${siwsInput.statement}`
-        }
-
-        // Collect advanced fields in the correct order as per ABNF spec
-        const fields = []
-
-        if (siwsInput.uri) {
-            fields.push(`URI: ${siwsInput.uri}`)
-        }
-        if (siwsInput.version) {
-            fields.push(`Version: ${siwsInput.version}`)
-        }
-        if (siwsInput.chainId) {
-            fields.push(`Chain ID: ${siwsInput.chainId}`)
-        }
-        if (siwsInput.nonce) {
-            fields.push(`Nonce: ${siwsInput.nonce}`)
-        }
-        if (siwsInput.issuedAt) {
-            fields.push(`Issued At: ${siwsInput.issuedAt}`)
-        }
-        if (siwsInput.expirationTime) {
-            fields.push(`Expiration Time: ${siwsInput.expirationTime}`)
-        }
-        if (siwsInput.notBefore) {
-            fields.push(`Not Before: ${siwsInput.notBefore}`)
-        }
-        if (siwsInput.requestId) {
-            fields.push(`Request ID: ${siwsInput.requestId}`)
-        }
-        if (siwsInput.resources && siwsInput.resources.length > 0) {
-            fields.push(`Resources:`)
-            for (const resource of siwsInput.resources) {
-                fields.push(`- ${resource}`)
-            }
-        }
-
-        // Add advanced fields if any exist (with double newline separator)
-        if (fields.length > 0) {
-            message += `\n\n${fields.join('\n')}`
-        }
-
-        return message
-    }
-
-    function validateSiwsMessage(siwsInput) {
-        const now = new Date()
-
-        // Check if message has expired (expirationTime is in the past)
-        if (siwsInput.expirationTime) {
-            const expirationTime = new Date(siwsInput.expirationTime)
-            if (now > expirationTime) {
-                return {
-                    valid: false,
-                    error: `SIWS message has expired. Current time: ${now.toISOString()}, Expiration: ${siwsInput.expirationTime}`,
-                }
-            }
-        }
-
-        // Check if message is not yet valid (notBefore is in the future)
-        if (siwsInput.notBefore) {
-            const notBefore = new Date(siwsInput.notBefore)
-            if (now < notBefore) {
-                return {
-                    valid: false,
-                    error: `SIWS message is not yet valid. Current time: ${now.toISOString()}, Not Before: ${siwsInput.notBefore}`,
-                }
-            }
-        }
-
-        return { valid: true }
-    }
-
-    async function verifySiwsSignature(siwsMessage, signerAddress, siwsMessageSignature) {
-        try {
-            const publicKey = await crypto.subtle.importKey(
-                'raw',
-                ethers.utils.base58.decode(signerAddress),
-                {
-                    name: 'Ed25519',
-                    namedCurve: 'Ed25519',
-                },
-                false,
-                ['verify']
-            )
-
-            const isValid = await crypto.subtle.verify(
-                'Ed25519',
-                publicKey,
-                ethers.utils.base58.decode(siwsMessageSignature),
-                new TextEncoder().encode(siwsMessage)
-            )
-
-            return isValid
-        } catch (error) {
-            console.error('Error in verifySiwsSignature:', error)
-            throw error
-        }
-    }
-
-    const siwsMessageJson = JSON.parse(siwsMessage)
-    const siwsMessageString = getSiwsMessage(siwsMessageJson)
-
-    try {
-        const siwsMessageValid = validateSiwsMessage(siwsMessageJson)
-        if (!siwsMessageValid.valid) {
-            console.log('SIWS message validation failed:', siwsMessageValid.error)
-            return LitActions.setResponse({
-                response: JSON.stringify({
-                    success: false,
-                    message: 'SIWS message validation failed.',
-                    error: siwsMessageValid.error,
-                }),
-            })
-        }
-    } catch (error) {
-        console.error('Error in validateSiwsMessage:', error)
-        return LitActions.setResponse({
-            response: JSON.stringify({
-                success: false,
-                message: 'Error in validateSiwsMessage.',
-                error: error.toString(),
-            }),
-        })
-    }
-
-    try {
-        const siwsSignatureValid = await verifySiwsSignature(siwsMessageString, siwsMessageJson.address, siwsMessageSignature)
-
-        if (!siwsSignatureValid) {
-            console.log('Signature is invalid.')
-            return LitActions.setResponse({
-                response: JSON.stringify({
-                    success: false,
-                    message: 'Signature is invalid.',
-                }),
-            })
-        }
-
-        console.log('Signature is valid.')
-    } catch (error) {
-        console.error('Error verifying signature:', error)
-        return LitActions.setResponse({
-            response: JSON.stringify({
-                success: false,
-                message: 'Error verifying signature.',
-                error: error.toString(),
-            }),
-        })
-    }
-
-    // Fetch and verify authorized signers from the hardcoded credential
-    try {
-        const accountInfo = await fetchAccountData(AUTHORIZED_RPC_URL, AUTHORIZED_CREDENTIAL_PDA)
-
-        // Verify the credential account is owned by the correct program
-        if (accountInfo.owner !== AUTHORIZED_PROGRAM_ID) {
-            console.log(`Credential PDA owner mismatch. Expected: ${AUTHORIZED_PROGRAM_ID}, Got: ${accountInfo.owner}`)
-            return LitActions.setResponse({
-                response: JSON.stringify({
-                    success: false,
-                    message: 'Credential PDA is not owned by the authorized program',
-                    expectedOwner: AUTHORIZED_PROGRAM_ID,
-                    actualOwner: accountInfo.owner,
-                }),
-            })
-        }
-
-        const credential = parseCredentialAccount(accountInfo.data)
-
-        // Check if the signer is authorized
-        const signerAddress = siwsMessageJson.address
-        if (!credential.authorizedSigners.includes(signerAddress)) {
-            console.log(`Signer ${signerAddress} is not in authorized signers list`)
-            return LitActions.setResponse({
-                response: JSON.stringify({
-                    success: false,
-                    message: 'Signer is not authorized to decrypt',
-                    authorizedSigners: credential.authorizedSigners,
-                    requestingSigner: signerAddress,
-                }),
-            })
-        }
-
-        console.log(`Signer ${signerAddress} is authorized to decrypt`)
-    } catch (error) {
-        console.error('Error checking authorized signers:', error)
-        return LitActions.setResponse({
-            response: JSON.stringify({
-                success: false,
-                message: 'Error checking authorized signers',
-                error: error.toString(),
-            }),
-        })
-    }
-
-    try {
-        const decryptedData = await Lit.Actions.decryptAndCombine({
-            accessControlConditions: [
-                {
-                    method: '',
-                    params: [':currentActionIpfsId'],
-                    pdaParams: [],
-                    pdaInterface: { offset: 0, fields: {} },
-                    pdaKey: '',
-                    chain: 'solana',
-                    returnValueTest: {
-                        key: '',
-                        comparator: '=',
-                        value: LitAuth.actionIpfsIds[0],
-                    },
-                },
-            ],
-            ciphertext,
-            dataToEncryptHash,
-            authSig: {
-                sig: ethers.utils.hexlify(ethers.utils.base58.decode(siwsMessageSignature)).slice(2),
-                derivedVia: 'solana.signMessage',
-                signedMessage: siwsMessageString,
-                address: siwsMessageJson.address,
-            },
-            chain: 'solana',
-        })
-        return LitActions.setResponse({ response: JSON.stringify({ success: true, decryptedData }) })
-    } catch (error) {
-        console.error('Error decrypting data:', error)
-        return LitActions.setResponse({
-            response: JSON.stringify({
-                success: false,
-                message: 'Error decrypting data.',
-                error: error.toString(),
-            }),
-        })
-    }
-}
-
-export const litActionCode = `(${_litActionCode.toString()})()`
+```bash [yarn]
+yarn generate-credential-pda
 ```
 
 :::
 
-##### The Structure of the Lit Action Code
+You should see output similar to the following:
 
-When providing the Lit Action code to the Lit SDK, you'll need to provide it as a stringified self executing function which looks like this:
+```bash
+> solana-attestation-demo-ts@1.0.0 generate-credential-pda attestation-flow-guides
+> ts-node src/lit/generate-credential-pda.ts
 
-```ts
-const _litActionCode = async () => {
-    // Lit Action code...
-}
+Starting credential PDA generator
 
-export const litActionCode = `(${_litActionCode.toString()})()`
+1. Getting Issuer keypair...
+issuer keypair does not exist at path: key-pairs/issuer.keypair.json. Generating it...
+Got Issuer keypair with address: EFjEXBpSHL7xXUNZEQf5CKWD7dZHkLfqc1i9tceoqms2
+
+2. Creating Credential...
+Credential PDA: Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk
+
+Credential PDA generated successfully!
 ```
 
-The `litActionCode` is the stringified self executing function, and what we imported and provide to the Lit SDK as the [code](#code) parameter to the `litNodeClient.executeJs` call.
-
-##### Hardcoded Solana Constants
-
-```ts
-const _litActionCode = async () => {
-    // Hardcoded values for this specific attestation service instance
-    const AUTHORIZED_RPC_URL = 'https://api.devnet.solana.com'
-    const AUTHORIZED_PROGRAM_ID = '22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG'
-    const AUTHORIZED_CREDENTIAL_PDA = 'Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk'
-
-    // The rest of the Lit Action code...
-}
-```
-
-- The `AUTHORIZED_RPC_URL` is the RPC URL of the Solana cluster that the attestation service is running on.
-- The `AUTHORIZED_PROGRAM_ID` is the program ID of the attestation service.
-- The `AUTHORIZED_CREDENTIAL_PDA` is the Credential PDA that was derived from the Issuer keypair.
-    - This PDA is unique to your Issuer keypair and is used to identify whether the requestor of the decryption request is authorized to decrypt the attestation data.
-    - We generated this PDA earlier in the [Running the Generate Credential PDA Script](#running-the-generate-credential-pda-script) section:
-        ```bash
-        2. Creating Credential...
-        Credential PDA: Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk
-        ```
-
-##### Fetching Account Data
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    async function fetchAccountData(rpcUrl, address) {
-        try {
-            const response = await fetch(rpcUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'getAccountInfo',
-                    params: [address, { encoding: 'base64', commitment: 'confirmed' }],
-                }),
-            })
-
-            const data = await response.json()
-            if (data.error) {
-                throw new Error(`RPC error: ${data.error.message}`)
-            }
-
-            if (!data.result || !data.result.value) {
-                throw new Error('Account not found')
-            }
-
-            const accountInfo = data.result.value
-            return {
-                data: ethers.utils.base64.decode(accountInfo.data[0]),
-                owner: accountInfo.owner,
-            }
-        } catch (error) {
-            console.error('Error fetching account data:', error)
-            throw error
-        }
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-The `fetchAccountData` function is a utility method that allows the Lit Action to query Solana's blockchain state directly from within the secure execution environment. It fetches and decodes account data from Solana using the `getAccountInfo` RPC call, handling errors, and returning both the account's data and owner. This will enable the Lit Action to check which signers are authorized to decrypt the attestation later in the code.
-
-##### Parsing the Credential Account Data
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    function parseCredentialAccount(data) {
-        let offset = 0
-
-        // Skip discriminator (1 byte)
-        offset += 1
-
-        // Read authority (32 bytes)
-        const authority = ethers.utils.base58.encode(data.slice(offset, offset + 32))
-        offset += 32
-
-        // Read name length (4 bytes, little-endian)
-        const nameLength = new DataView(data.buffer, offset, 4).getUint32(0, true)
-        offset += 4
-
-        // Skip name bytes
-        offset += nameLength
-
-        // Read authorized signers length (4 bytes, little-endian)
-        const signersLength = new DataView(data.buffer, offset, 4).getUint32(0, true)
-        offset += 4
-
-        // Read authorized signers
-        const authorizedSigners = []
-        for (let i = 0; i < signersLength; i++) {
-            const signer = ethers.utils.base58.encode(data.slice(offset, offset + 32))
-            authorizedSigners.push(signer)
-            offset += 32
-        }
-
-        return { authority, authorizedSigners }
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-The `parseCredentialAccount` function deserializes the raw bytes returned from the Solana RPC into a readable credential account structure. It manually parses the binary data by reading specific byte offsets that correspond to the on-chain account layout: skipping the discriminator, extracting the authority public key, reading the name length and skipping those bytes, then finally extracting the list of authorized signers. This parsing is necessary because Solana stores account data as raw bytes, and we need to extract the authorized signers list to verify if the requesting signer has permission to decrypt the attestation data.
-
-##### Recreating the SIWS Message
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    function getSiwsMessage(siwsInput) {
-        console.log('Attempting to parse SIWS message: ', siwsInput)
-
-        if (!siwsInput.domain || !siwsInput.address) {
-            throw new Error('Domain and address are required for Siws message construction')
-        }
-
-        // Start with the mandatory domain and address line
-        let message = `${siwsInput.domain} wants you to sign in with your Solana account:\n${siwsInput.address}`
-
-        // Add statement if provided (with double newline separator)
-        if (siwsInput.statement) {
-            message += `\n\n${siwsInput.statement}`
-        }
-
-        // Collect advanced fields in the correct order as per ABNF spec
-        const fields = []
-
-        if (siwsInput.uri) {
-            fields.push(`URI: ${siwsInput.uri}`)
-        }
-        if (siwsInput.version) {
-            fields.push(`Version: ${siwsInput.version}`)
-        }
-        if (siwsInput.chainId) {
-            fields.push(`Chain ID: ${siwsInput.chainId}`)
-        }
-        if (siwsInput.nonce) {
-            fields.push(`Nonce: ${siwsInput.nonce}`)
-        }
-        if (siwsInput.issuedAt) {
-            fields.push(`Issued At: ${siwsInput.issuedAt}`)
-        }
-        if (siwsInput.expirationTime) {
-            fields.push(`Expiration Time: ${siwsInput.expirationTime}`)
-        }
-        if (siwsInput.notBefore) {
-            fields.push(`Not Before: ${siwsInput.notBefore}`)
-        }
-        if (siwsInput.requestId) {
-            fields.push(`Request ID: ${siwsInput.requestId}`)
-        }
-        if (siwsInput.resources && siwsInput.resources.length > 0) {
-            fields.push(`Resources:`)
-            for (const resource of siwsInput.resources) {
-                fields.push(`- ${resource}`)
-            }
-        }
-
-        // Add advanced fields if any exist (with double newline separator)
-        if (fields.length > 0) {
-            message += `\n\n${fields.join('\n')}`
-        }
-
-        return message
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-The `getSiwsMessage` function reconstructs the SIWS message string from the JSON input provided as `siwsMessage` in the [`jsParams` Lit Action parameter](#jsparams) within the secure Lit Action environment. This reconstruction is a critical security step that avoids trusting the message string passed as input (which could be manipulated), and instead rebuilds the message from its individual components according to Phantom's SIWS specification. This ensures the message structure matches what was originally signed by the user.
-
-##### Validating the SIWS Message
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    function validateSiwsMessage(siwsInput) {
-        const now = new Date()
-
-        // Check if message has expired (expirationTime is in the past)
-        if (siwsInput.expirationTime) {
-            const expirationTime = new Date(siwsInput.expirationTime)
-            if (now > expirationTime) {
-                return {
-                    valid: false,
-                    error: `SIWS message has expired. Current time: ${now.toISOString()}, Expiration: ${siwsInput.expirationTime}`,
-                }
-            }
-        }
-
-        // Check if message is not yet valid (notBefore is in the future)
-        if (siwsInput.notBefore) {
-            const notBefore = new Date(siwsInput.notBefore)
-            if (now < notBefore) {
-                return {
-                    valid: false,
-                    error: `SIWS message is not yet valid. Current time: ${now.toISOString()}, Not Before: ${siwsInput.notBefore}`,
-                }
-            }
-        }
-
-        return { valid: true }
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-The `validateSiwsMessage` function performs time-based validation on the SIWS message to prevent replay attacks and ensure the authentication request is fresh. It checks two optional time constraints: the `expirationTime` field to ensure the message hasn't expired, and the `notBefore` field to ensure the message isn't being used before its intended validity period.
-
-##### Verifying the SIWS Signature
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    async function verifySiwsSignature(siwsMessage, signerAddress, siwsMessageSignature) {
-        try {
-            const publicKey = await crypto.subtle.importKey(
-                'raw',
-                ethers.utils.base58.decode(signerAddress),
-                {
-                    name: 'Ed25519',
-                    namedCurve: 'Ed25519',
-                },
-                false,
-                ['verify']
-            )
-
-            const isValid = await crypto.subtle.verify(
-                'Ed25519',
-                publicKey,
-                ethers.utils.base58.decode(siwsMessageSignature),
-                new TextEncoder().encode(siwsMessage)
-            )
-
-            return isValid
-        } catch (error) {
-            console.error('Error in verifySiwsSignature:', error)
-            throw error
-        }
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-The `verifySiwsSignature` function performs cryptographic verification to confirm the SIWS message was actually signed by the claimed wallet address. It uses the Web Crypto API to import the public key from the Solana address (converting from Base58 format), then verifies the Ed25519 signature against the reconstructed message string. This cryptographic proof ensures that only someone with the private key corresponding to the claimed address could have created the signature, preventing impersonation attacks where malicious users might try to claim they control a wallet they don't actually own.
-
-##### Putting It All Together
-
-Now that we've covered the individual functions that make up the Lit Action code, let's put it all together to perform the SIWS message validation, and check if the message signer is authorized to decrypt the attestation data.
-
-The first steps is to parse the SIWS message into a JSON object, and reconstruct the SIWS message from the input parameters: `siwsMessage` to ensure the message is valid and not expired, or being used before its intended validity period:
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    const siwsMessageJson = JSON.parse(siwsMessage)
-    const siwsMessageString = getSiwsMessage(siwsMessageJson)
-
-    try {
-        const siwsMessageValid = validateSiwsMessage(siwsMessageJson)
-        if (!siwsMessageValid.valid) {
-            console.log('SIWS message validation failed:', siwsMessageValid.error)
-            return LitActions.setResponse({
-                response: JSON.stringify({
-                    success: false,
-                    message: 'SIWS message validation failed.',
-                    error: siwsMessageValid.error,
-                }),
-            })
-        }
-    } catch (error) {
-        console.error('Error in validateSiwsMessage:', error)
-        return LitActions.setResponse({
-            response: JSON.stringify({
-                success: false,
-                message: 'Error in validateSiwsMessage.',
-                error: error.toString(),
-            }),
-        })
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-Next, we'll verify the SIWS signature to ensure the message was actually signed by the claimed wallet address:
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    try {
-        const siwsSignatureValid = await verifySiwsSignature(siwsMessageString, siwsMessageJson.address, siwsMessageSignature)
-
-        if (!siwsSignatureValid) {
-            console.log('Signature is invalid.')
-            return LitActions.setResponse({
-                response: JSON.stringify({
-                    success: false,
-                    message: 'Signature is invalid.',
-                }),
-            })
-        }
-
-        console.log('Signature is valid.')
-    } catch (error) {
-        console.error('Error verifying signature:', error)
-        return LitActions.setResponse({
-            response: JSON.stringify({
-                success: false,
-                message: 'Error verifying signature.',
-                error: error.toString(),
-            }),
-        })
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-Then we perform the authorization check by fetching the hardcoded Credential account from Solana to verify decryption permissions. This involves a multi-step security validation:
-
-1. We confirm the credential account is owned by the legitimate Solana Attestation Service program (preventing attacks using fake credential accounts).
-2. We parse the account data to extract the authorized signers list.
-3. We verify that the authenticated wallet address from our SIWS message is actually included in this list of permitted decryption signers.
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    // Fetch and verify authorized signers from the hardcoded credential
-    try {
-        const accountInfo = await fetchAccountData(AUTHORIZED_RPC_URL, AUTHORIZED_CREDENTIAL_PDA)
-
-        // Verify the credential account is owned by the correct program
-        if (accountInfo.owner !== AUTHORIZED_PROGRAM_ID) {
-            console.log(`Credential PDA owner mismatch. Expected: ${AUTHORIZED_PROGRAM_ID}, Got: ${accountInfo.owner}`)
-            return LitActions.setResponse({
-                response: JSON.stringify({
-                    success: false,
-                    message: 'Credential PDA is not owned by the authorized program',
-                    expectedOwner: AUTHORIZED_PROGRAM_ID,
-                    actualOwner: accountInfo.owner,
-                }),
-            })
-        }
-
-        const credential = parseCredentialAccount(accountInfo.data)
-
-        // Check if the signer is authorized
-        const signerAddress = siwsMessageJson.address
-        if (!credential.authorizedSigners.includes(signerAddress)) {
-            console.log(`Signer ${signerAddress} is not in authorized signers list`)
-            return LitActions.setResponse({
-                response: JSON.stringify({
-                    success: false,
-                    message: 'Signer is not authorized to decrypt',
-                    authorizedSigners: credential.authorizedSigners,
-                    requestingSigner: signerAddress,
-                }),
-            })
-        }
-
-        console.log(`Signer ${signerAddress} is authorized to decrypt`)
-    } catch (error) {
-        console.error('Error checking authorized signers:', error)
-        return LitActions.setResponse({
-            response: JSON.stringify({
-                success: false,
-                message: 'Error checking authorized signers',
-                error: error.toString(),
-            }),
-        })
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-Lastly, after validating the signer of the SIWS message is authorized to decrypt the attestation data, we can proceed to decrypt the attestation data using `Lit.Actions.decryptAndCombine`:
-
-```ts
-const _litActionCode = async () => {
-    // Previous Lit Action code...
-
-    try {
-        const decryptedData = await Lit.Actions.decryptAndCombine({
-            accessControlConditions: [
-                {
-                    method: '',
-                    params: [':currentActionIpfsId'],
-                    pdaParams: [],
-                    pdaInterface: { offset: 0, fields: {} },
-                    pdaKey: '',
-                    chain: 'solana',
-                    returnValueTest: {
-                        key: '',
-                        comparator: '=',
-                        value: LitAuth.actionIpfsIds[0],
-                    },
-                },
-            ],
-            ciphertext,
-            dataToEncryptHash,
-            authSig: {
-                sig: ethers.utils.hexlify(ethers.utils.base58.decode(siwsMessageSignature)).slice(2),
-                derivedVia: 'solana.signMessage',
-                signedMessage: siwsMessageString,
-                address: siwsMessageJson.address,
-            },
-            chain: 'solana',
-        })
-        return LitActions.setResponse({ response: JSON.stringify({ success: true, decryptedData }) })
-    } catch (error) {
-        console.error('Error decrypting data:', error)
-        return LitActions.setResponse({
-            response: JSON.stringify({
-                success: false,
-                message: 'Error decrypting data.',
-                error: error.toString(),
-            }),
-        })
-    }
-
-    // The rest of the Lit Action code...
-}
-```
-
-The `Lit.Actions.decryptAndCombine` function is part of the Lit Actions SDK and is available globally within the Lit node execution environment. When invoked, it initiates the distributed decryption process across the Lit network. Each participating Lit node checks whether the provided Access Control Conditions are satisfied, and if so, generates and shares its decryption share with the network. Once enough valid shares are collected (2/3 of the total Lit nodes), they are combined to reconstruct the decrypted data, which is then returned to the Lit Action.
-
-The parameters for `Lit.Actions.decryptAndCombine` are:
-
-- `accessControlConditions`: An array of Access Control Conditions that must be satisfied for the decryption to occur.
-- `ciphertext`: The ciphertext to decrypt that we fetched from the on-chain Attestation account.
-- `dataToEncryptHash`: The hash of the data to encrypt that we fetched from the on-chain Attestation account.
-- `authSig`: The signature of the SIWS message used by the Lit nodes to authenticate who's making the decryption request.
-- `chain`: The chain corresponding to the `authSig` parameter (in this case, `solana` because we're providing a signature using a Solana keypair).
-
-For a refresher on how the `accessControlConditions` parameter works, check out the [Access Control Conditions](#access-control-conditions) section we covered earlier.
-
-## Implementation
-
-Now that we've setup and covered all the parts of this demo, let's run it!
-
-The following demonstation script follows the same pattern as the [Basic Attestation Flow](/guides/ts/lit-encrypted-attestations/basic-attestation-flow) guide, but with some changes that demonstrate how to use the helper functions we created above to encrypt the attestation data.
-
-### Prerequisites
-
-- As [mentioned earlier](#running-the-generate-credential-pda-script), make sure to run the `generate-credential-pda` script to create the Issuer and Authorized Signers keypairs, as well as derive the Credential PDA.
-- Copy and paste the Credential PDA from the output of the script into the `AUTHORIZED_CREDENTIAL_PDA` variable in Lit Action (see [here](#hardcoded-credential-account) for more details).
+The line: `Credential PDA: Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk` is important and what we'll need to hardcode into our decryption Lit Action for the `AUTHORIZED_CREDENTIAL_PDA` constant.
 
 ### Step 1: Setup
 
@@ -1761,7 +279,7 @@ async function main() {
 
     // Step 3: Setting up Credential
 
-    // Step 4: Createing Schema
+    // Step 4: Creating Schema
 
     // Step 5: Creating Attestation
 
@@ -1780,6 +298,36 @@ The current code includes spaces for 8 steps. We've started by creating our clie
 This step is creating our Lit node client, connecting us to the Lit Datil-dev network. Additionally, the Ethereum wallet we'll be using as the payer for the decryption request is generated and returned to us. Add the following code to your `main` function after Step 1:
 
 _Note: remeber that while using the Lit Datil-dev network, payment is actually required, but providing a wallet is still required._
+
+Create the file `setup-lit.ts` in our `lit` helpers directory and export the function `setupLit`:
+
+```ts
+import { LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants'
+import { LitNodeClient } from '@lit-protocol/lit-node-client'
+import { LIT_NETWORKS_KEYS } from '@lit-protocol/types'
+import { ethers } from 'ethers'
+
+export async function setupLit({
+    litNetwork = LIT_NETWORK.DatilDev,
+    debug = false,
+}: {
+    litNetwork?: LIT_NETWORKS_KEYS
+    debug?: boolean
+} = {}) {
+    const litPayerEthersWallet = new ethers.Wallet(ethers.Wallet.createRandom().privateKey, new ethers.providers.JsonRpcProvider(LIT_RPC.CHRONICLE_YELLOWSTONE))
+
+    const litNodeClient = new LitNodeClient({
+        litNetwork,
+        debug,
+    })
+    await litNodeClient.connect()
+
+    return {
+        litNodeClient,
+        litPayerEthersWallet,
+    }
+}
+```
 
 ```ts
 // Step 2: Setup Lit
@@ -1872,11 +420,54 @@ try {
 
 Next, we need to issue an actual attestation to a specific user with the defined data and expiration.
 
-Because we're encrypting our attestation data, we need to first encrypt it using our `encryptAttestationData` helper function, and then create the attestation using the encryption metadata.
+Because we're encrypting our attestation data, we need to first encrypt it using Lit Protocol, and then create the attestation using the encryption metadata.
 
-Add the following code to your `main` function after Step 4:
+Create the file `encrypt-attestation-data.ts` in our `lit` helpers directory and export the function `encryptAttestationData`:
 
 ```ts
+import { LitNodeClient } from '@lit-protocol/lit-node-client'
+import ipfsOnlyHash from 'typestub-ipfs-only-hash'
+
+import { AttestationEncryptionMetadata } from '../types'
+import { litActionCode as litActionCodeDecrypt } from '../litActionDecrypt'
+
+export const encryptAttestationData = async ({
+    litNodeClient,
+    attestationData,
+}: {
+    litNodeClient: LitNodeClient
+    attestationData: Uint8Array
+}): Promise<AttestationEncryptionMetadata> => {
+    const { ciphertext, dataToEncryptHash } = await litNodeClient.encrypt({
+        dataToEncrypt: attestationData,
+        solRpcConditions: [
+            {
+                method: '',
+                params: [':currentActionIpfsId'],
+                pdaParams: [],
+                pdaInterface: { offset: 0, fields: {} },
+                pdaKey: '',
+                chain: 'solana',
+                returnValueTest: {
+                    key: '',
+                    comparator: '=',
+                    value: await ipfsOnlyHash.of(litActionCodeDecrypt),
+                },
+            },
+        ],
+        // @ts-ignore
+        chain: 'solana',
+    })
+
+    return { ciphertext, dataToEncryptHash }
+}
+```
+
+After creating the helper, import it and add the following code to your `main` function after Step 4:
+
+```ts
+import { encryptAttestationData } from './lit-helpers/encrypt-attestation-data'
+
 // Step 5: Create and Encrypt Attestation
 console.log('\n5. Creating Attestation...')
 const [attestationPda] = await deriveAttestationPda({
@@ -2095,6 +686,20 @@ main()
 
 To test your attestation workflow, run the script in your project terminal:
 
+:::note
+In order to run the demonstration using the following command, make sure you're `package.json` contains the following:
+
+```json
+"scripts": {
+  "start": "ts-node attestation-demo.ts",
+  "build": "tsc"
+}
+```
+
+If you've copied the existing `attestation-demo.ts` file and renamed it for this encryption code example, make sure you use the new file name here in the `start` script.
+
+:::
+
 :::code-group
 
 ```bash [npm]
@@ -2113,7 +718,7 @@ yarn start
 
 Here's what you should expect to see in the output:
 
-```
+```bash
 lit-js-sdk:constants:errors deprecated LitErrorKind is deprecated and will be removed in a future version. Use LIT_ERROR_KIND instead. node:internal/modules/cjs/loader:1692:14
 Starting Solana Attestation Service with Lit Protocol encrypted attestation demo
 
