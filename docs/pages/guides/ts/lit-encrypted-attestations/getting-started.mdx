@@ -472,8 +472,7 @@ export const decryptAttestationData = async ({
 
 :::
 
-{/* TODO */}
-For the input parameters for this function, we'll cover `litNodeClient` and `litPayerEthersWallet` in more detail later in this guide, and the remaining are as follows:
+For the input parameters for this function, we'll cover `litNodeClient` and `litPayerEthersWallet` in more detail in the [Setup Lit](#setup-litts) section, and the remaining are as follows:
 
 - `ciphertext`: This is the encrypted attestation data returned by the Lit SDK after encrypting it
 - `dataToEncryptHash`: This is the hash of the data that was encrypted along with our ACCs, also returned by the Lit SDK
@@ -492,9 +491,8 @@ This is the code for our custom decryption Lit Action that will be executed on t
 
 When submitting code to be execute by the Lit network as a Lit Action, it can be uploaded to IPFS and the IPFS CID can be provided in this `executeJs` request (and the Lit nodes will fetch the code from IPFS before executing it), or it can be provided directly as a code string, as we're doing in this guide.
 
-{/* TODO */}
 :::note
-We setup and dive into the Lit Action code in the [Decryption Lit Action](#the-decryption-lit-action) section.
+We setup and dive into the Lit Action code in the [Decryption Lit Action](#lit-action-decryptts) section.
 :::
 
 #### `sessionSigs`
@@ -568,8 +566,7 @@ So for your custom decryption Lit Action, the following global variables will be
 
 Within the `lit` directory, create a new file called `encrypt-attestation-data.ts` that will contain the helper function responsible for encrypting the attestation data using the Lit SDK.
 
-{/* TODO */}
-This function uses the `encrypt` on the Lit node client (which we create in the X section) to encrypt the attestation data, combining it with our ACCs to create the `ciphertext` and `dataToEncryptHash`.
+This function uses the `encrypt` on the Lit node client to encrypt the attestation data, combining it with our ACCs to create the `ciphertext` and `dataToEncryptHash`.
 
 As covered in the [Access Control Conditions (ACCs)](#access-control-conditions-accs) section, the ACCs are simply saying that this attestation data can only be decrypted by the Lit Action we've created for this guide.
 

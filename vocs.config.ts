@@ -145,7 +145,7 @@ export default defineConfig({
                                 },
                                 {
                                     text: "Encrypted Tokenized Attestation",
-                                    link: "/guides/ts/lit-encrypted-attestations/tokenized-attestation"
+                                    link: "/guides/ts/lit-encrypted-attestations/tokenized-attestations"
                                 }
                             ]
                         }
