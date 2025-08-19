@@ -126,6 +126,28 @@ export default defineConfig({
                         {
                             text: "Tokenized Attestations",
                             link: "/guides/ts/tokenized-attestations"
+                        },
+                        {
+                            text: "Encrypted Attestation Data",
+                            collapsed: false,
+                            items: [
+                                {
+                                    text: "Introduction",
+                                    link: "/guides/ts/lit-encrypted-attestations/introduction"
+                                },
+                                {
+                                    text: "Getting Started",
+                                    link: "/guides/ts/lit-encrypted-attestations/getting-started"
+                                },
+                                {
+                                    text: "Encrypted Basic Attestation Flow",
+                                    link: "/guides/ts/lit-encrypted-attestations/basic-attestation-flow"
+                                },
+                                {
+                                    text: "Encrypted Tokenized Attestation",
+                                    link: "/guides/ts/lit-encrypted-attestations/tokenized-attestations"
+                                }
+                            ]
                         }
                     ]
                 },

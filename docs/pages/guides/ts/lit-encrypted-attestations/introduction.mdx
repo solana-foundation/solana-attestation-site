@@ -1,0 +1,65 @@
+---
+title: Encrypted Attestation Data with Lit Protocol
+description: Learn how to encrypt and control access to attestation data using Lit Protocol's decentralized key management network
+date: 2025-08-12
+---
+
+# Encrypted Attestation Data with Lit Protocol
+
+## Introduction
+
+Solana attestations are typically stored on-chain for transparency and verifiability. However, many real-world use cases require privacy controls over sensitive attestation data such as: medical records, academic transcripts, personal certifications, and proprietary business information.
+
+Lit Protocol solves this challenge by enabling you to encrypt attestation data while maintaining programmable access control. Instead of storing sensitive data directly on-chain, you can store encrypted data that only authorized parties can decrypt based on conditions you define.
+
+This guide shows you how to combine Solana's attestation service with Lit Protocol's decentralized encryption to create private, yet verifiable attestations.
+
+In this section, we'll cover how to integrate Lit Protocol into the [Basic](/guides/ts/how-to-create-digital-credentials) and [Tokenized](/guides/ts/lit-encrypted-attestations/tokenized-attestation-flow) attestation guides.
+
+## How Lit Protocol Works
+
+Lit Protocol is a decentralized key management network that enables secure encryption without requiring users to manage complex cryptographic keys.
+
+### Access Control Conditions (ACCs)
+
+Rules that define who can decrypt your data, for example:
+
+- Specific wallet addresses
+- NFT or token ownership requirements
+- Time-based conditions
+- Custom logic utilizing on and/or off-chain data
+
+### Identity-Based Encryption
+
+Your data is encrypted using a unique identity derived from your ACCs and a hash of the data you're encrypting. When the Lit nodes generation the decryption key, it's generated on-demand specifically for this identity, meaning a decryption key is only valid to decrypt specific data encrypted with the specific ACCs.
+
+### Threshold Network
+
+Lit is powered by a network of nodes running in Trusted Execution Environments (TEEs) using sealed AMD SEV-SNP hardware that isolates key material from node operators. Your data is encrypted client-side, is never stored on the Lit network, and is not accessible to the Lit nodes.
+
+:::info
+**Learn more about Lit Protocol's architecture and security by visiting the [documentation](https://developer.litprotocol.com) and reading the [whitepaper](https://github.com/LIT-Protocol/whitepaper).**
+:::
+
+## The Encryption Process
+
+1. **Define the ACCs**: Specify who and when your attestation data can be decrypted
+2. **Encrypt the data**: Use Lit's JavaScript SDK to encrypt your attestation content using the Lit network's BLS public key
+3. **Store the encrypted data**: Store the encrypted data on-chain as the Solana attestation
+
+## The Decryption Process
+
+When someone requests to decrypt the attestation data, Lit's network ensures security through a distributed verification process:
+
+1. **Policy verification**: Each Lit node independently verifies that your ACCs are satisfied
+2. **Signature share creation**: If the ACCs are met, each node uses its BLS private key share to sign the identity (a combination of your ACCs and the hash of the data you're encrypting), producing a decryption key share
+3. **Threshold key shares**: Once a threshold (more than two-thirds) of nodes have provided their key shares, the Lit SDK combines them to construct a full decryption key
+4. **Data recovery**: The authorized user uses the reconstructed key to decrypt and access the original attestation data.
+
+This distributed approach means no single node can decrypt your data alone, and decryption only happens when your specified ACCs are completely satisfied.
+
+## Next Steps
+
+Ready to implement encrypted attestations?
+
+Continue with the [Getting Started](/guides/ts/lit-encrypted-attestations/getting-started) guide to learn how to create encrypted attestations with Lit Protocol.

@@ -1,0 +1,766 @@
+---
+title: Encrypted Basic Attestation Flow
+description: Learn how to encrypt and control access to attestation data using Lit Protocol's decentralized key management network
+date: 2025-08-12
+---
+
+# Encrypted Basic Attestation Flow
+
+This guide will walk you through integrating Lit encryption into the [Basic Attestation Flow](/guides/ts/how-to-create-digital-credentials) example.
+
+## Prerequisites
+
+Before starting this guide, you should have:
+
+- [**Node.js**](https://nodejs.org/en/download) (v22 or later)
+- [**Solana CLI**](https://solana.com/docs/intro/installation) v2.2.x or greater
+- [TypeScript](http://typescriptlang.org/) Experience
+- A working implementation of the [Basic Attestation Flow](/guides/ts/how-to-create-digital-credentials) guide
+- All of the prerequisite Lit helpers functions from the [Getting Started](/guides/ts/lit-encrypted-attestations/getting-started) guide
+
+## Updating the Existing Implementation
+
+Let's update the existing file, `attestation-demo.ts`, to utilize our Lit helpers functions to encrypt the attestation data:
+
+### Imports and Configuration
+
+Start with the adding necessary imports, the following are all the imports required for this code example:
+
+```ts
+import type { LitNodeClient } from '@lit-protocol/lit-node-client'
+import {
+    getCreateCredentialInstruction,
+    getCreateSchemaInstruction,
+    serializeAttestationData,
+    getCreateAttestationInstruction,
+    fetchSchema,
+    getChangeAuthorizedSignersInstruction,
+    fetchAttestation,
+    deserializeAttestationData,
+    deriveAttestationPda,
+    deriveCredentialPda,
+    deriveSchemaPda,
+    deriveEventAuthorityAddress,
+    getCloseAttestationInstruction,
+    SOLANA_ATTESTATION_SERVICE_PROGRAM_ADDRESS,
+    fetchCredential,
+} from 'sas-lib'
+import {
+    airdropFactory,
+    generateKeyPairSigner,
+    lamports,
+    Signature,
+    TransactionSigner,
+    KeyPairSigner,
+    Instruction,
+    Address,
+    Blockhash,
+    createSolanaClient,
+    createTransaction,
+    SolanaClient,
+} from 'gill'
+import { estimateComputeUnitLimitFactory } from 'gill/programs'
+import { ethers } from 'ethers'
+
+import { createSiwsMessage, decryptAttestationData, encryptAttestationData, setupLit, signSiwsMessage } from './lit-helpers'
+import { AttestationEncryptionMetadata } from './types'
+import { getAuthorizedSigner1Keypair, getAuthorizedSigner2Keypair, getIssuerKeypair } from './get-keypair'
+```
+
+Next, update the existing configuration:
+
+```ts
+const CONFIG = {
+    CLUSTER_OR_RPC: 'devnet',
+    CREDENTIAL_NAME: 'LIT-ENCRYPTED-ATTESTATIONS',
+    SCHEMA_NAME: 'LIT-ENCRYPTED-METADATA',
+    SCHEMA_LAYOUT: Buffer.from([12, 12]),
+    SCHEMA_FIELDS: ['ciphertext', 'dataToEncryptHash'],
+    SCHEMA_VERSION: 1,
+    SCHEMA_DESCRIPTION: 'Schema for Lit Protocol encrypted attestation metadata with access control conditions',
+    ATTESTATION_DATA: {
+        name: 'test-user',
+        age: 100,
+        country: 'usa',
+    },
+    ATTESTATION_EXPIRY_DAYS: 365,
+}
+```
+
+Previously, the configuration's `SCHEMA_FIELDS` specified the individual properties of the attestation data. However, now that we'll be encrypting the attestation data, the schema defines the Lit encryption metadata (`ciphertext` and `dataToEncryptHash`) that will be stored on-chain instead, and used for decryption.
+
+For this example, the `SCHEMA_LAYOUT` is set to `Buffer.from([12, 12])` which corresponds to two fields:
+
+- the first `12` represents a String type for the `ciphertext` field,
+- the second `12` represents a String type for the `dataToEncryptHash` field.
+
+### Updating `setupWallets`
+
+Next, we're going to make some modifications to the existing `setupWallets` helper function. Instead of generating new keypairs for `authorizedSigner1`, `authorizedSigner2`, and `issuer` every time we run the script, we're going to generate them once and save them as keyfiles in the directory: `key-pairs`.
+
+This is because we need to have a static and predetermined credential PDA that will be hardcoded within our Lit Action that handles the authorization checks and decryption. Hardcoding the credential PDA allows the Lit Action to enforce that only authorized signers for the specific credential are authorized to decrypt the attestation data.
+
+Update the `setupWallets` function to load the keypairs from the keyfiles if they exist, otherwise generate new ones:
+
+```ts
+async function setupWallets(client: SolanaClient) {
+    try {
+        const payer = await generateKeyPairSigner()
+        const authorizedSigner1 = await getAuthorizedSigner1Keypair() // <-- Load from keyfile using our helper function
+        const authorizedSigner2 = await getAuthorizedSigner2Keypair() // <-- Load from keyfile using our helper function
+        const issuer = await getIssuerKeypair() // <-- Load from keyfile using our helper function
+        const testUser = await generateKeyPairSigner()
+
+        const airdrop = airdropFactory({ rpc: client.rpc, rpcSubscriptions: client.rpcSubscriptions })
+        const airdropTx: Signature = await airdrop({
+            commitment: 'processed',
+            lamports: lamports(BigInt(1_000_000_000)),
+            recipientAddress: payer.address,
+        })
+
+        console.log(`    - Airdrop completed: ${airdropTx}`)
+        return { payer, authorizedSigner1, authorizedSigner2, issuer, testUser }
+    } catch (error) {
+        throw new Error(`Failed to setup wallets: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+}
+```
+
+This is a key change to the existing Basic Solana Attestation Flow, and without it, we'll be unable to setup our Lit Action to properly authenticate Credential signers when they make requests to Lit to decrypt the attestation data.
+
+### Updating the Attestation Verification Function
+
+Next we'll be modifying the existing `verifyAttestation` function to handle retrieving the Lit encryption metadata from the on-chain attestation data, and decrypting it by submitting a signed SIWS message to our custom decryption Lit Action.
+
+```ts
+async function verifyAttestation({
+    client,
+    schemaPda,
+    userAddress,
+    authorizedSigner,
+    litDecryptionParams,
+}: {
+    client: SolanaClient
+    schemaPda: Address
+    userAddress: Address
+    authorizedSigner: KeyPairSigner
+    litDecryptionParams: {
+        litNodeClient: LitNodeClient
+        litPayerEthersWallet: ethers.Wallet
+    }
+}): Promise<{ isVerified: boolean; decryptedAttestationData: string | null }> {
+    try {
+        const schema = await fetchSchema(client.rpc, schemaPda)
+        if (schema.data.isPaused) {
+            console.log(`    -  Schema is paused`)
+            return { isVerified: false, decryptedAttestationData: null }
+        }
+        const [attestationPda] = await deriveAttestationPda({
+            credential: schema.data.credential,
+            schema: schemaPda,
+            nonce: userAddress,
+        })
+        const attestation = await fetchAttestation(client.rpc, attestationPda)
+        const attestationData = deserializeAttestationData(schema.data, attestation.data.data as Uint8Array) as AttestationEncryptionMetadata
+        console.log(`    - Attestation data:`, attestationData)
+
+        let decryptedAttestationData: string | null = null
+        try {
+            const siwsMessage = createSiwsMessage({
+                address: authorizedSigner.address,
+                domain: 'localhost',
+                uri: 'http://localhost',
+                version: '1',
+            })
+            const siwsMessageSignature = await signSiwsMessage(siwsMessage, authorizedSigner)
+
+            decryptedAttestationData = (await decryptAttestationData({
+                ...litDecryptionParams,
+                ...attestationData,
+                siwsMessage,
+                siwsMessageSignature,
+            })) as string
+        } catch (error) {
+            console.error('There was an error while decrypting the attestation data:', error)
+            return { isVerified: false, decryptedAttestationData: null }
+        }
+
+        const currentTimestamp = BigInt(Math.floor(Date.now() / 1000))
+        return { isVerified: currentTimestamp < attestation.data.expiry, decryptedAttestationData }
+    } catch (error) {
+        return { isVerified: false, decryptedAttestationData: null }
+    }
+}
+```
+
+Let's cover the differences between the existing `verifyAttestation` function and the updated one:
+
+- New function parameters:
+    - `authorizedSigner`: This parameter is expected to be one of the Credential's Authorized Signer keypairs we loaded from the keyfiles.
+    - `litDecryptionParams`: This object contains a Lit Node Client and the randomly generated Ethereum wallet (used as the payer for the decryption request) which allows us to make the decryption request to the Lit network.
+- New function return type:
+    - `decryptedAttestationData`: This is the decrypted attestation data returned from the Lit Action after the SIWS message is authenticated and verified by the Lit network.
+- New return value type for `deserializeAttestationData`:
+    - Previously, this function call returned the raw attestation data that was stored on-chain, but now it's returning `AttestationEncryptionMetadata` (as defined in our `types.ts` file) which is our Lit encryption metadata: `ciphertext` and `dataToEncryptHash`.
+
+## Setting Up the `main` Function
+
+Now that we've setup and covered all the parts of this demo, let's run it!
+
+The following demonstration script follows the same pattern as the Basic Attestation Flow guide, but with some changes that demonstrate how to use the helper functions we created above to encrypt the attestation data.
+
+### Prerequisites
+
+As mentioned previously, before we can run the code example script, we need to generate the Issuer and Authorized Signers keypairs, derive the Credential PDA, and paste the address into our decryption Lit Action.
+
+To do this, we'll add a new script to our `package.json` file:
+
+```json
+"scripts": {
+  "generate-credential-pda": "ts-node generate-credential-pda.ts",
+}
+```
+
+And run it:
+
+:::code-group
+
+```bash [npm]
+npm run generate-credential-pda
+```
+
+```bash [pnpm]
+pnpm generate-credential-pda
+```
+
+```bash [yarn]
+yarn generate-credential-pda
+```
+
+:::
+
+You should see output similar to the following:
+
+```bash
+> solana-attestation-demo-ts@1.0.0 generate-credential-pda attestation-flow-guides
+> ts-node src/lit/generate-credential-pda.ts
+
+Starting credential PDA generator
+
+1. Getting Issuer keypair...
+issuer keypair does not exist at path: key-pairs/issuer.keypair.json. Generating it...
+Got Issuer keypair with address: EFjEXBpSHL7xXUNZEQf5CKWD7dZHkLfqc1i9tceoqms2
+
+2. Creating Credential...
+Credential PDA: Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk
+
+Credential PDA generated successfully!
+```
+
+The line: `Credential PDA: Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk` is important and what we'll need to hardcode into our decryption Lit Action for the `AUTHORIZED_CREDENTIAL_PDA` constant.
+
+### Step 1: Setup
+
+Now, let's build the main demonstration function that showcases the complete attestation workflow. Add the `main` function to your code--we'll use this to outline for our steps:
+
+```ts
+let _litNodeClient: LitNodeClient | null = null
+
+async function main() {
+    console.log('Starting Solana Attestation Service with Lit Protocol encrypted attestation demo\n')
+
+    const client: SolanaClient = createSolanaClient({ urlOrMoniker: CONFIG.CLUSTER_OR_RPC })
+
+    // Step 1: Setup wallets and fund payer
+    console.log('1. Setting up wallets and funding payer...')
+    const { payer, authorizedSigner1, authorizedSigner2, issuer, testUser } = await setupWallets(client)
+
+    // Step 2: Setting up Lit
+
+    // Step 3: Setting up Credential
+
+    // Step 4: Creating Schema
+
+    // Step 5: Creating Attestation
+
+    // Step 6: Updating Authorized Signers
+
+    // Step 7: Verifying Attestation
+
+    // Step 8: Closing Attestation
+}
+```
+
+The current code includes spaces for 8 steps. We've started by creating our client and calling our `setupWallets` function. Let's add the remaining steps next.
+
+### Step 2: Setting up Lit
+
+This step is creating our Lit node client, connecting us to the Lit Datil-dev network. Additionally, the Ethereum wallet we'll be using as the payer for the decryption request is generated and returned to us. Add the following code to your `main` function after Step 1:
+
+_Note: remember that while using the Lit Datil-dev network, payment is actually required, but providing a wallet is still required._
+
+```ts
+// Step 2: Setup Lit
+console.log('2. Setting up Lit...')
+const { litNodeClient, litPayerEthersWallet } = await setupLit()
+_litNodeClient = litNodeClient
+```
+
+### Step 3: Setting up Credential
+
+Next we're going to create our Credential account if it doesn't already exist, or fetch the existing one if it does.
+
+Unlike the [Basic Attestation Flow](/guides/ts/how-to-create-digital-credentials.mdx) guide that always creates a new Credential keypair and account every time you run the demo, this demo reuses the Issuer keypair so that we have a static Credential PDA to use in out Lit Action.
+
+Add the following code to your `main` function after Step 2:
+
+```ts
+// Step 3: Create Credential (if it doesn't exist)
+console.log('\n3. Setting up Credential...')
+const [credentialPda] = await deriveCredentialPda({
+    authority: issuer.address,
+    name: CONFIG.CREDENTIAL_NAME,
+})
+
+try {
+    // Check if credential already exists
+    const existingCredential = await fetchCredential(client.rpc, credentialPda)
+    console.log(`    - Credential already exists: ${credentialPda}`)
+    console.log(`    - Authority: ${existingCredential.data.authority}`)
+    console.log(`    - Authorized signers: ${existingCredential.data.authorizedSigners.length}`)
+} catch (error) {
+    // Credential doesn't exist, create it
+    console.log(`    - Creating new credential: ${credentialPda}`)
+    const createCredentialInstruction = getCreateCredentialInstruction({
+        payer,
+        credential: credentialPda,
+        authority: issuer,
+        name: CONFIG.CREDENTIAL_NAME,
+        signers: [authorizedSigner1.address],
+    })
+
+    await sendAndConfirmInstructions(client, payer, [createCredentialInstruction], 'Credential created')
+    console.log(`    - Credential created successfully`)
+}
+```
+
+### Step 4: Create Schema
+
+Next, we need to define our _Schema_ to define the structure of data that can be attested (`ciphertext` and `dataToEncryptHash` in our example).
+
+Just like the Credential PDA, we're going to check if the Schema PDA already exists, and create it if it doesn't.
+
+Add the following code to your `main` function after Step 3:
+
+```ts
+// Step 4: Create Schema
+console.log('\n4.  Creating Schema...')
+const [schemaPda] = await deriveSchemaPda({
+    credential: credentialPda,
+    name: CONFIG.SCHEMA_NAME,
+    version: CONFIG.SCHEMA_VERSION,
+})
+
+try {
+    // Check if schema already exists
+    const existingSchema = await fetchSchema(client.rpc, schemaPda)
+    console.log(`    - Schema already exists: ${schemaPda}`)
+    console.log(`    - Schema name: ${new TextDecoder().decode(existingSchema.data.name)}`)
+    console.log(`    - Version: ${existingSchema.data.version}`)
+} catch (error) {
+    // Schema doesn't exist, create it
+    console.log(`    - Creating new schema: ${schemaPda}`)
+    const createSchemaInstruction = getCreateSchemaInstruction({
+        authority: issuer,
+        payer,
+        name: CONFIG.SCHEMA_NAME,
+        credential: credentialPda,
+        description: CONFIG.SCHEMA_DESCRIPTION,
+        fieldNames: CONFIG.SCHEMA_FIELDS,
+        schema: schemaPda,
+        layout: CONFIG.SCHEMA_LAYOUT,
+    })
+
+    await sendAndConfirmInstructions(client, payer, [createSchemaInstruction], 'Schema created')
+    console.log(`    - Schema created successfully`)
+}
+```
+
+### Step 5: Create Attestation
+
+Next, we need to issue an actual attestation to a specific user with the defined data and expiration.
+
+Because we're encrypting our attestation data, we need to first encrypt it using Lit Protocol, and then create the attestation using the encryption metadata.
+
+Add the following code to your `main` function after Step 4:
+
+```ts
+// Step 5: Create and Encrypt Attestation
+console.log('\n5. Creating Attestation...')
+const [attestationPda] = await deriveAttestationPda({
+    credential: credentialPda,
+    schema: schemaPda,
+    nonce: testUser.address,
+})
+
+const schema = await fetchSchema(client.rpc, schemaPda)
+const expiryTimestamp = Math.floor(Date.now() / 1000) + CONFIG.ATTESTATION_EXPIRY_DAYS * 24 * 60 * 60
+
+const attestationEncryptionMetadata = await encryptAttestationData({
+    attestationData: new TextEncoder().encode(JSON.stringify(CONFIG.ATTESTATION_DATA)),
+    litNodeClient,
+})
+
+const createAttestationInstruction = getCreateAttestationInstruction({
+    payer,
+    authority: authorizedSigner1,
+    credential: credentialPda,
+    schema: schemaPda,
+    attestation: attestationPda,
+    nonce: testUser.address,
+    expiry: expiryTimestamp,
+    data: serializeAttestationData(schema.data, {
+        ...attestationEncryptionMetadata,
+    }),
+})
+
+await sendAndConfirmInstructions(client, payer, [createAttestationInstruction], 'Attestation created')
+console.log(`    - Attestation PDA: ${attestationPda}`)
+```
+
+### Step 6: Update Authorized Signers
+
+Next, let's add `authorizedSigner2` as an authorized signer to our credential to demonstrate how to manage who can issue attestations for the credential.
+
+Add the following code to your `main` function after Step 5:
+
+```ts
+// Step 6: Update Authorized Signers
+console.log('\n6. Updating Authorized Signers...')
+const changeAuthSignersInstruction = getChangeAuthorizedSignersInstruction({
+    payer,
+    authority: issuer,
+    credential: credentialPda,
+    signers: [authorizedSigner1.address, authorizedSigner2.address],
+})
+
+await sendAndConfirmInstructions(client, payer, [changeAuthSignersInstruction], 'Authorized signers updated')
+```
+
+### Step 7: Verify Attestation
+
+Let's run a verification check to show how you might check if users have valid attestations, testing both attested and non-attested users. Normally, you might run something like this on your backend when a user signs into your platform.
+
+Add the following code to your `main` function after Step 6:
+
+```ts
+// Step 7: Verify Attestation
+console.log('\n7. Verifying Attestations...')
+
+const isUserVerified = await verifyAttestation({
+    client,
+    schemaPda,
+    userAddress: testUser.address,
+    authorizedSigner: authorizedSigner1, // Use one of the authorized signers
+    litDecryptionParams: {
+        litNodeClient,
+        litPayerEthersWallet,
+    },
+})
+console.log(`    - Test User is ${isUserVerified.isVerified ? 'verified' : 'not verified'}`)
+if (isUserVerified.decryptedAttestationData) {
+    console.log(`    - Decrypted Attestation Data: ${isUserVerified.decryptedAttestationData}`)
+}
+
+const randomUser = await generateKeyPairSigner()
+const isRandomVerified = await verifyAttestation({
+    client,
+    schemaPda,
+    userAddress: randomUser.address,
+    authorizedSigner: authorizedSigner2, // Use the other authorized signer
+    litDecryptionParams: {
+        litNodeClient,
+        litPayerEthersWallet,
+    },
+})
+console.log(`    - Random User is ${isRandomVerified.isVerified ? 'verified' : 'not verified'}`)
+
+// Test with unauthorized signer (should fail)
+console.log('\n    Testing with unauthorized signer (should fail)...')
+const unauthorizedSigner = await generateKeyPairSigner()
+console.log(`    - Unauthorized signer address: ${unauthorizedSigner.address}`)
+
+const unauthorizedResult = await verifyAttestation({
+    client,
+    schemaPda,
+    userAddress: testUser.address,
+    authorizedSigner: unauthorizedSigner, // This signer is NOT in the credential
+    litDecryptionParams: {
+        litNodeClient,
+        litPayerEthersWallet,
+    },
+})
+
+if (unauthorizedResult.isVerified) {
+    console.log(`    - ❌ Unauthorized signer is verified`)
+} else {
+    console.log(`    - ✅ Unauthorized signer is not verified`)
+}
+```
+
+### Step 8: Close Attestation
+
+Finally, let's revoke an attestation from a user, and return the summary data for pretty printing.
+
+Add the following code to your `main` function after Step 7:
+
+```ts
+console.log('\n8. Closing Attestation...')
+
+const eventAuthority = await deriveEventAuthorityAddress()
+const closeAttestationInstruction = getCloseAttestationInstruction({
+    payer,
+    attestation: attestationPda,
+    authority: authorizedSigner1,
+    credential: credentialPda,
+    eventAuthority,
+    attestationProgram: SOLANA_ATTESTATION_SERVICE_PROGRAM_ADDRESS,
+})
+await sendAndConfirmInstructions(client, payer, [closeAttestationInstruction], 'Closed attestation')
+
+// Return summary data for pretty printing
+return {
+    addresses: {
+        credentialPda,
+        schemaPda,
+        attestationPda,
+        testUserAddress: testUser.address,
+    },
+    verification: isUserVerified,
+    randomVerification: isRandomVerified,
+    unauthorizedResult,
+    config: CONFIG,
+    attestationEncryptionMetadata,
+}
+```
+
+### Calling the Main Function
+
+The following code calls the `main` function we've just finished defining, validates the results, and also handles the pretty printing of the results.
+
+Add the following code after your `main` function to execute it:
+
+```ts
+main()
+    .then(results => {
+        console.log('\n' + '='.repeat(80))
+        console.log('SOLANA ATTESTATION SERVICE WITH LIT PROTOCOL ENCRYPTED ATTESTATION DEMO')
+        console.log('='.repeat(80))
+
+        console.log('\n📋 DEMO CONFIGURATION:')
+        console.log(`   Network: ${results.config.CLUSTER_OR_RPC}`)
+        console.log(`   Organization: ${results.config.CREDENTIAL_NAME}`)
+        console.log(`   Schema: ${results.config.SCHEMA_NAME} (v${results.config.SCHEMA_VERSION})`)
+
+        console.log('\n🔑 CREATED ACCOUNTS:')
+        console.log(`   Credential PDA:    ${results.addresses.credentialPda}`)
+        console.log(`   Schema PDA:        ${results.addresses.schemaPda}`)
+        console.log(`   Attestation PDA:   ${results.addresses.attestationPda}`)
+        console.log(`   Test User:         ${results.addresses.testUserAddress}`)
+
+        console.log('\n🧪 VERIFICATION TEST RESULTS:')
+
+        // Test User Verification
+        const testUserStatus = results.verification.isVerified ? '✅ PASSED' : '❌ FAILED'
+        console.log(`   Test User Verification:     ${testUserStatus}`)
+        if (results.verification.isVerified) {
+            console.log(`   Encrypted Metadata:`)
+            console.log(`     - Ciphertext: ${results.attestationEncryptionMetadata.ciphertext.substring(0, 50)}...`)
+            console.log(`     - Data Hash: ${results.attestationEncryptionMetadata.dataToEncryptHash}`)
+            if (results.verification.decryptedAttestationData) {
+                console.log(`   Decrypted Attestation Data: ${results.verification.decryptedAttestationData}`)
+            }
+        }
+
+        // Random User Verification (should fail)
+        const randomUserStatus = !results.randomVerification.isVerified ? '✅ PASSED' : '❌ FAILED'
+        console.log(`   Random User Verification:   ${randomUserStatus} (correctly rejected)`)
+
+        // Unauthorized Signer Test (should fail)
+        const unauthorizedStatus = !results.unauthorizedResult.isVerified ? '✅ PASSED' : '❌ FAILED'
+        console.log(`   Unauthorized Signer Test:   ${unauthorizedStatus} (correctly rejected)`)
+
+        const allTestsPassed = results.verification.isVerified && !results.randomVerification.isVerified && !results.unauthorizedResult.isVerified
+
+        if (allTestsPassed) {
+            console.log('   ✅ ALL TESTS PASSED! Demo completed successfully.')
+        } else {
+            console.log('   ❌ Some tests failed. Please review the results above.')
+        }
+
+        console.log('\n' + '='.repeat(80))
+    })
+    .catch(error => {
+        console.error('\n❌ Demo failed:', error)
+        process.exit(1)
+    })
+    .finally(() => {
+        _litNodeClient?.disconnect()
+    })
+```
+
+## Running the Demonstration
+
+To test your attestation workflow, run the script in your project terminal:
+
+:::note
+In order to run the demonstration using the following command, make sure you're `package.json` contains the following:
+
+```json
+"scripts": {
+  "start": "ts-node attestation-demo.ts",
+  "build": "tsc"
+}
+```
+
+If you've copied the existing `attestation-demo.ts` file and renamed it for this encryption code example, make sure you use the new file name here in the `start` script.
+
+:::
+
+:::code-group
+
+```bash [npm]
+npm start
+```
+
+```bash [pnpm]
+pnpm start
+```
+
+```bash [yarn]
+yarn start
+```
+
+:::
+
+Here's what you should expect to see in the output:
+
+```bash
+lit-js-sdk:constants:errors deprecated LitErrorKind is deprecated and will be removed in a future version. Use LIT_ERROR_KIND instead. node:internal/modules/cjs/loader:1692:14
+Starting Solana Attestation Service with Lit Protocol encrypted attestation demo
+
+1. Setting up wallets and funding payer...
+authorized-signer-1 keypair does not exist at path: key-pairs/authorized-signer-1.keypair.json. Generating it...
+Got Authorized Signer 1 keypair with address: 8XMEduQLuEw4LHGD6a66LeH1TKJsa3rpghGnM1mjbHCN
+authorized-signer-2 keypair does not exist at path: key-pairs/authorized-signer-2.keypair.json. Generating it...
+Got Authorized Signer 2 keypair with address: 8BDVzsSvqFFMDpcqcueTBVnPu33aqP72XJq3QUfGAeho
+Got Issuer keypair with address: EFjEXBpSHL7xXUNZEQf5CKWD7dZHkLfqc1i9tceoqms2
+    - Airdrop completed: 5oZPNTNhkXZDvEeKFDrwhwym49QCn8pvPTfFfZHjhMA9CR8Me29fXuFx4cRWFRwnTM37j4sCEh7DhUaapaygQ72r
+2. Setting up Lit...
+lit-js-sdk:constants:constants deprecated LogLevel is deprecated and will be removed in a future version. Use LOG_LEVEL instead. node_modules/.pnpm/@lit-protocol+core@7.2.1_typescript@5.8.3/node_modules/@lit-protocol/core/src/lib/lit-core.js:453:119
+
+3. Setting up Credential...
+    - Creating new credential: Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk
+    - Credential created - Signature: 2LtJedSKv7bKcoSLKLQxt2Woio8r4cxkXdcvxmTAEY1B8Y5TRHuddtnkQwQm6Gu7WLLnJsP9ZL5XCvBL67KAW8SH
+    - Credential created successfully
+
+4.  Creating Schema...
+    - Creating new schema: 9Zhbp3ybaZGnPQH6LHuC6fE51qu33g1byan9X34XGcqa
+    - Schema created - Signature: 4Uu4oSh6dFQg81ryXQsYiPwWgGSqg7rNpRSogAo4g3EVmzL8Z6h8qABviPQVEoqUENRJgkfnbgm7ttrLTPb1GhnR
+    - Schema created successfully
+
+5. Creating Attestation...
+using deprecated parameters for `initSync()`; pass a single object instead
+    - Attestation created - Signature: 3KBcnS3FnH1ACn1hPhEhGB9aMDLRvr31fC5fizMEC1Qiz38WEGEXgWqMhsyqEJabYoHWe5scSaxeMcvtBTdXnh7b
+    - Attestation PDA: 5Baypg1tZ6M1wmBKw56b5YZ6RV7AyJtrsyD5kVSZ9q3C
+
+6. Updating Authorized Signers...
+    - Authorized signers updated - Signature: 5zCcr9A3Z6ag4pCNHi4BwaSDdvqjZStJWBu43RgidvYYSLSwsf5mPbRHjNo41caVfAdHEgWgJ52QFRuWjopZn8KK
+
+7. Verifying Attestations...
+    - Attestation data: {
+  ciphertext: 'mBWDUTwA+LHxmhAbFGO3H+wc24rshZZgynWblL6IFsUxvbuipA2goo5Ps66i/4sH5ecEb/G67AE/1KvxyvhvUZCpagAWMYZvR6gg7q/5tVQvfEV6mL6XD9e9U0u00izx6ILiMUVJU/tnt2FNVNU6aTQC8IS4PSPGx6KIE+iSC68C',
+  dataToEncryptHash: '4efa888818ad5ba81b0e459037eb8c62a3f0bdf401de5372e21d8aa132a0a808'
+}
+Storage key "lit-session-key" is missing. Not a problem. Continue...
+Storage key "lit-wallet-sig" is missing. Not a problem. Continue...
+Unable to store walletSig in local storage. Not a problem. Continue...
+    - Test User is verified
+    - Decrypted Attestation Data: {"name":"test-user","age":100,"country":"usa"}
+    - Random User is not verified
+
+    Testing with unauthorized signer (should fail)...
+    - Unauthorized signer address: EHG46v4pFgRwtrfteCds1sApEvSJWnnN7iFkUGcMERAF
+    - Attestation data: {
+  ciphertext: 'mBWDUTwA+LHxmhAbFGO3H+wc24rshZZgynWblL6IFsUxvbuipA2goo5Ps66i/4sH5ecEb/G67AE/1KvxyvhvUZCpagAWMYZvR6gg7q/5tVQvfEV6mL6XD9e9U0u00izx6ILiMUVJU/tnt2FNVNU6aTQC8IS4PSPGx6KIE+iSC68C',
+  dataToEncryptHash: '4efa888818ad5ba81b0e459037eb8c62a3f0bdf401de5372e21d8aa132a0a808'
+}
+Storage key "lit-session-key" is missing. Not a problem. Continue...
+Storage key "lit-wallet-sig" is missing. Not a problem. Continue...
+Unable to store walletSig in local storage. Not a problem. Continue...
+There was an error while decrypting the attestation data: Error: An unexpected error occurred while decrypting the attestation data: Failed to decrypt attestation data: {"success":false,"message":"Signer is not authorized to decrypt","authorizedSigners":["8XMEduQLuEw4LHGD6a66LeH1TKJsa3rpghGnM1mjbHCN","8BDVzsSvqFFMDpcqcueTBVnPu33aqP72XJq3QUfGAeho"],"requestingSigner":"EHG46v4pFgRwtrfteCds1sApEvSJWnnN7iFkUGcMERAF"}
+    at decryptAttestationData (lit/decrypt-attestation-data.ts:80:15)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async verifyAttestation (attestation-demo.ts:149:40)
+    at async main (attestation-demo.ts:334:32)
+    - ✅ Unauthorized signer is not verified
+
+7. Closing Attestation...
+    - Closed attestation - Signature: b6NFkqmsLTeCeLoWJocx2n152vx5TcLehA9R4i3piZefeGroBzv91Lesdwdsn61N1MnF4L7ETPv7z9f2TUmDXwK
+
+================================================================================
+SOLANA ATTESTATION SERVICE WITH LIT PROTOCOL ENCRYPTED ATTESTATION DEMO
+================================================================================
+
+📋 DEMO CONFIGURATION:
+   Network: devnet
+   Organization: LIT-ENCRYPTED-ATTESTATIONS
+   Schema: LIT-ENCRYPTED-METADATA (v1)
+
+🔑 CREATED ACCOUNTS:
+   Credential PDA:    Cuk2RuHYCMv1QcpB7bGqdXPafJs5BG2JNfbJqbyVkyRk
+   Schema PDA:        9Zhbp3ybaZGnPQH6LHuC6fE51qu33g1byan9X34XGcqa
+   Attestation PDA:   5Baypg1tZ6M1wmBKw56b5YZ6RV7AyJtrsyD5kVSZ9q3C
+   Test User:         FgHoHpy589aV5y6dKymwZ1okJ8nL6p8x4eqotf7rMMfj
+
+🧪 VERIFICATION TEST RESULTS:
+   Test User Verification:     ✅ PASSED
+   Encrypted Metadata:
+     - Ciphertext: mBWDUTwA+LHxmhAbFGO3H+wc24rshZZgynWblL6IFsUxvbuipA...
+     - Data Hash: 4efa888818ad5ba81b0e459037eb8c62a3f0bdf401de5372e21d8aa132a0a808
+   Decrypted Attestation Data: {"name":"test-user","age":100,"country":"usa"}
+   Random User Verification:   ✅ PASSED (correctly rejected)
+   Unauthorized Signer Test:   ✅ PASSED (correctly rejected)
+   ✅ ALL TESTS PASSED! Demo completed successfully.
+
+================================================================================
+```
+
+The `lit-js-sdk` logs are expected, and can be ignored, and the `There was an error while decrypting the attestation data` error is for our decryption attempt using an unauthorized signer in [Step 7](#step-7-verify-attestation).
+
+If you see `✅ ALL TESTS PASSED! Demo completed successfully.`, you've successfully completed the demo!
+
+## Wrap Up
+
+Congratulations! You've successfully implemented a complete Solana Attestation Service system using Lit Protocol to encrypt the attestation data. You now have a working demonstration that shows how to:
+
+- **Create credentials** that represent issuing authorities
+- **Define schemas** for encrypted attestation metadata (`ciphertext` and `dataToEncryptHash`)
+- **Encrypt attestation data using Lit Protocol** with custom access control conditions
+- **Issue encrypted attestations** to specific users, storing only Lit encryption metadata on-chain
+- **Manage authorized signers** for enhanced security and dynamic access control
+- **Verify and decrypt attestations** programmatically, ensuring only authorized signers can access the underlying data
+- **Close (revoke) attestations** as needed
+
+The Solana Attestation Service (SAS) provides a powerful foundation for building trust and identity systems on Solana. Whether you're creating compliance systems, financial credentials, professional certifications, or gaming achievements, SAS gives you the tools to issue and verify claims in a decentralized, transparent way.
+
+**Want to learn more?** Check out our [Guide: Encrypted Tokenized Attestations with Lit Protocol](/guides/ts/lit-encrypted-attestations/tokenized-attestation-flow).
+
+## Additional Resources
+
+- Need help? Ask questions the [Solana Stack Exchange](https://solana.stackexchange.com/) with a `SAS` tag.
+- [**SAS Source Code**](https://github.com/solana-foundation/solana-attestation-service)
+- [**Complete Code Example**](https://github.com/solana-foundation/solana-attestation-service/tree/master/examples/typescript/attestation-flow-guides/src/lit/sas-standard-lit-demo.ts)
+- [**Solana Developer Resources**](https://solana.com/developers)
+- [**Lit Protocol Documentation**](https://developer.litprotocol.com/)
+- [**Lit Protocol Builders Telegram Group**](https://t.me/+aa73FAF9Vp82ZjJh)
